@@ -234,6 +234,20 @@ def quran(request):
     current_surah_idx = mushaf_lib.page_to_surah_index(page_num)
     current_surah = surahs[current_surah_idx] if surahs else None
 
+    # Növbəti/əvvəlki səhifənin fontlarını preload üçün topla
+    def _preload_fonts(pnum):
+        pv = mushaf_lib.prepare_page_view(pnum)
+        return pv['fonts'] if pv else []
+
+    preload_fonts: list[dict] = []
+    seen_font_files: set[str] = set(f['file'] for f in (page['fonts'] if page else []))
+    for adj_page in (page_num + 1, page_num - 1):
+        if 1 <= adj_page <= mushaf_lib.PAGE_COUNT:
+            for f in _preload_fonts(adj_page):
+                if f['file'] not in seen_font_files:
+                    preload_fonts.append(f)
+                    seen_font_files.add(f['file'])
+
     if page and highlight_verse:
         for line in page['lines']:
             for w in line['words']:
@@ -257,6 +271,7 @@ def quran(request):
             'filter_surah': filter_surah,
             'search_hits': search_hits,
             'highlight_verse': highlight_verse or '',
+            'preload_fonts': preload_fonts,
         },
     )
 
@@ -268,7 +283,10 @@ def mushaf_font(request, filename: str):
     path = mushaf_lib.fonts_dir() / name
     if not path.is_file():
         raise Http404()
-    return FileResponse(path.open('rb'), content_type='font/ttf')
+    resp = FileResponse(path.open('rb'), content_type='font/ttf')
+    # 30 gün brauzer + CDN keşi — font faylları dəyişmir
+    resp['Cache-Control'] = 'public, max-age=2592000, immutable'
+    return resp
 
 
 def reciters(request):

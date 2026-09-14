@@ -5,6 +5,12 @@
 {% block page_sub %}QCF4 Mədinə məshəfi · {{ page_count }} səhifə{% endblock %}
 
 {% block extra_css %}
+{% if preload_fonts %}
+{% for f in preload_fonts %}
+<link rel="preload" as="font" type="font/ttf" crossorigin="anonymous"
+  href="{% url 'dash-mushaf-font' f.file %}">
+{% endfor %}
+{% endif %}
 <style>
 {% if page and page.fonts %}
 {% for f in page.fonts %}
@@ -272,6 +278,7 @@
 .mushaf-glyph.is-tap {
   cursor: pointer;
   border-radius: 3px;
+  touch-action: none;
 }
 .mushaf-glyph.is-tap:hover {
   background: rgba(43, 187, 173, 0.12);

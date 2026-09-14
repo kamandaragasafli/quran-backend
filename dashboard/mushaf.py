@@ -163,6 +163,7 @@ def apply_layout_overrides(page: dict) -> dict:
     return page
 
 
+@lru_cache(maxsize=604)
 def load_page(page_number: int) -> dict | None:
     if page_number < 1 or page_number > PAGE_COUNT:
         return None
@@ -173,6 +174,7 @@ def load_page(page_number: int) -> dict | None:
     return apply_layout_overrides(data)
 
 
+@lru_cache(maxsize=604)
 def prepare_page_view(page_number: int) -> dict | None:
     page = load_page(page_number)
     if not page:
