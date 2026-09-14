@@ -1,0 +1,1360 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Quran · Miras{% endblock %}
+{% block page_title %}Quran{% endblock %}
+{% block page_sub %}QCF4 Mədinə məshəfi · {{ page_count }} səhifə{% endblock %}
+
+{% block extra_css %}
+<style>
+{% if page and page.fonts %}
+{% for f in page.fonts %}
+@font-face {
+  font-family: "{{ f.name }}";
+  src: url("{% url 'dash-mushaf-font' f.file %}") format("truetype");
+  font-display: block;
+}
+{% endfor %}
+{% endif %}
+.mushaf-filters {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 10px;
+}
+.mushaf-filters label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.mushaf-filters input {
+  width: 100%;
+  box-sizing: border-box;
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  border-radius: 12px;
+  padding: 11px 12px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+}
+.mushaf-filters input[dir="rtl"] {
+  font-size: 16px;
+  font-weight: 500;
+}
+.mushaf-filters .btn-search {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 11px 18px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8EC5FF, #5B9DFF);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+  height: 44px;
+}
+.mushaf-hint {
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.mushaf-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px var(--shadow);
+}
+.mushaf-nav-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mushaf-nav-top select {
+  flex: 1;
+  min-width: 0;
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  border-radius: 12px;
+  padding: 11px 12px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+}
+.mushaf-meta {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.mushaf-nav-pager {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+.mushaf-nav-pager .btn-nav {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7ED6C2, #2BBBAD);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 42px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 160px;
+}
+.mushaf-nav-pager .btn-nav:hover {
+  filter: brightness(1.05);
+  text-decoration: none;
+  color: #fff;
+}
+.mushaf-nav-pager .btn-nav.disabled {
+  opacity: 0.38;
+  pointer-events: none;
+  filter: none;
+  background: #9BB8B3;
+}
+.mushaf-nav-pager .btn-next { justify-self: start; }
+.mushaf-nav-pager .btn-prev { justify-self: end; }
+.mushaf-page-jump {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 14px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+}
+.mushaf-page-jump .page-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.mushaf-page-jump input[type="number"] {
+  width: 68px;
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 6px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  box-sizing: border-box;
+}
+.mushaf-page-jump .btn-go {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7ED6C2, #2BBBAD);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  min-height: 36px;
+}
+.search-results { margin-bottom: 16px; }
+.search-results table td.ar {
+  direction: rtl;
+  font-size: 16px;
+  line-height: 1.55;
+  max-width: 520px;
+}
+.search-results a.hit {
+  font-weight: 700;
+  color: #3A7AD9;
+}
+.mushaf-stage {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow-x: hidden;
+}
+.mushaf-page {
+  width: min(100%, 520px);
+  max-width: 100%;
+  background: #FFFCF5;
+  border: 1px solid rgba(28, 42, 58, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 12px 36px var(--shadow);
+  padding: 22px 20px 18px;
+  direction: rtl;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.mushaf-header {
+  text-align: center;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(28, 42, 58, 0.08);
+}
+.mushaf-header .ar {
+  font-size: 18px;
+  color: #1A2430;
+  margin-bottom: 4px;
+}
+.mushaf-header .az {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+  direction: ltr;
+}
+.mushaf-line {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0;
+  margin: 0;
+  min-height: 1.55em;
+  white-space: nowrap;
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  direction: rtl; /* sağdan-sola; row-reverse yox — seçim pozulmasın */
+}
+.mushaf-line::-webkit-scrollbar { height: 0; }
+.mushaf-glyph {
+  font-size: clamp(18px, 5.2vw, 28px);
+  line-height: 1.55;
+  color: #1A2430;
+  display: inline-block;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.mushaf-glyph.is-header {
+  font-size: clamp(17px, 4.8vw, 26px);
+  color: #2BBBAD;
+}
+.mushaf-glyph.is-bismillah {
+  font-size: clamp(17px, 4.8vw, 26px);
+}
+.mushaf-glyph.is-hit {
+  color: #1F9A8F;
+  background: rgba(43, 187, 173, 0.18);
+  border-radius: 4px;
+}
+.mushaf-glyph.is-tap {
+  cursor: pointer;
+  border-radius: 3px;
+}
+.mushaf-glyph.is-tap:hover {
+  background: rgba(43, 187, 173, 0.12);
+}
+.mushaf-glyph.is-picked {
+  background: rgba(43, 187, 173, 0.32) !important;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(43, 187, 173, 0.45);
+}
+.mushaf-glyph.is-ink-waqf { color: #E53935 !important; }
+.mushaf-glyph.is-ink-istinaf { color: #43A047 !important; }
+.mushaf-glyph.is-ink-grad {
+  background: linear-gradient(90deg, #E53935 0%, #1A2430 48%, #43A047 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent;
+}
+.mushaf-glyph.is-ink-grad.is-picked {
+  -webkit-text-fill-color: unset;
+  color: #1A2430 !important;
+  background: rgba(43, 187, 173, 0.32) !important;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+}
+
+/* Seçimdən sonra kiçik alət paneli (kopyala kimi) */
+.vp-sel-bubble {
+  display: none;
+  position: fixed;
+  z-index: 70;
+  padding: 4px;
+  border-radius: 10px;
+  background: #1C2A3A;
+  box-shadow: 0 10px 24px rgba(28, 42, 58, 0.28);
+  animation: vpIn .12s ease;
+}
+.vp-sel-bubble.open { display: flex; gap: 2px; align-items: center; }
+.vp-sel-bubble button {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+  background: transparent;
+  white-space: nowrap;
+}
+.vp-sel-bubble button:hover { background: rgba(255,255,255,0.12); }
+.vp-sel-bubble .vp-sel-open {
+  background: #2BBBAD;
+}
+.vp-sel-bubble .vp-sel-open:hover { background: #25a89b; }
+.vp-sel-bubble .vp-sel-meta {
+  display: none;
+}
+.vp-sel-bubble .vp-sel-ar {
+  display: none;
+}
+
+/* —— Vəqf / İstinaf modal —— */
+.vp-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(28, 42, 58, 0.42);
+  backdrop-filter: blur(5px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.vp-backdrop.open { display: flex; }
+.vp-modal {
+  width: min(100%, 560px);
+  max-height: min(88vh, 560px);
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid rgba(28, 42, 58, 0.08);
+  box-shadow: 0 20px 48px rgba(28, 42, 58, 0.22);
+  overflow: hidden;
+  animation: vpIn .16s ease;
+}
+@keyframes vpIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+.vp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid rgba(28, 42, 58, 0.07);
+  flex-shrink: 0;
+}
+.vp-head-main { min-width: 0; flex: 1; }
+.vp-head h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.vp-head .vp-sub {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.vp-arabic {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 10px 14px;
+  max-width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(126, 214, 194, 0.18), rgba(43, 187, 173, 0.12));
+  border: 1px solid rgba(43, 187, 173, 0.22);
+  direction: rtl;
+  line-height: 1.35;
+  text-align: center;
+}
+.vp-word {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+}
+.vp-word-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  font-size: 10px;
+  line-height: 1;
+  color: #fff;
+}
+.vp-word-ico.is-waqf { background: #E53935; }
+.vp-word-ico.is-istinaf { background: #43A047; }
+.vp-word-ico.is-both {
+  background: linear-gradient(90deg, #E53935 0%, #43A047 100%);
+  width: 22px;
+}
+.vp-word-txt {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1A2430;
+}
+.vp-word.is-waqf .vp-word-txt { color: #E53935; }
+.vp-word.is-istinaf .vp-word-txt { color: #43A047; }
+.vp-word.is-both .vp-word-txt {
+  background: linear-gradient(90deg, #E53935 0%, #1A2430 48%, #43A047 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+.vp-word.is-mid .vp-word-txt { color: #1A2430; opacity: 0.72; }
+.vp-legend {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.vp-leg-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  direction: ltr;
+  text-align: left;
+}
+.vp-leg-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.vp-leg-dot.is-waqf { background: #E53935; }
+.vp-leg-dot.is-istinaf { background: #43A047; }
+.vp-leg-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  font-size: 9px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.vp-leg-ico.is-waqf { background: #E53935; }
+.vp-leg-ico.is-istinaf { background: #43A047; }
+.vp-leg-em { color: var(--text); font-weight: 700; }
+.vp-close {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--muted);
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+.vp-close:hover { color: var(--text); background: var(--bg-soft); }
+.vp-body {
+  padding: 14px 18px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+.vp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.vp-section {
+  border: 1px solid rgba(28, 42, 58, 0.08);
+  border-radius: 14px;
+  padding: 12px 12px 10px;
+  background: #fff;
+}
+.vp-section h4 {
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(28, 42, 58, 0.06);
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  color: var(--teal-deep, #1F9A8F);
+  font-weight: 800;
+}
+.vp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.vp-field:last-child { margin-bottom: 0; }
+.vp-field label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.vp-field select,
+.vp-field textarea,
+.vp-field input {
+  width: 100%;
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  border-radius: 10px;
+  padding: 9px 11px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+  resize: vertical;
+  transition: border-color .12s, background .12s;
+}
+.vp-field select:focus,
+.vp-field textarea:focus,
+.vp-field input:focus {
+  outline: none;
+  border-color: rgba(43, 187, 173, 0.55);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(43, 187, 173, 0.12);
+}
+.vp-field textarea {
+  min-height: 56px;
+  max-height: 120px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+.vp-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 12px 18px 14px;
+  border-top: 1px solid rgba(28, 42, 58, 0.07);
+  background: #fff;
+  flex-shrink: 0;
+}
+.vp-actions button {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 16px;
+  border-radius: 11px;
+  font-weight: 700;
+  font-size: 13px;
+}
+.vp-btn-cancel {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border) !important;
+}
+.vp-btn-cancel:hover { background: var(--bg-soft); color: var(--text); }
+.vp-btn-delete {
+  background: #fff;
+  color: #C62828;
+  border: 1px solid rgba(198, 40, 40, 0.35) !important;
+  margin-right: auto;
+}
+.vp-btn-delete:hover { background: rgba(198, 40, 40, 0.08); }
+.vp-btn-save {
+  background: linear-gradient(135deg, #7ED6C2, #2BBBAD);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(43, 187, 173, 0.28);
+}
+.vp-btn-save:hover { filter: brightness(1.04); }
+.vp-sel-bubble .vp-sel-delete {
+  background: #C62828;
+}
+.vp-sel-bubble .vp-sel-delete:hover { background: #B71C1C; }
+@media (max-width: 540px) {
+  .vp-grid { grid-template-columns: 1fr; }
+  .vp-modal { max-height: 92vh; border-radius: 16px; }
+  .vp-actions { flex-direction: column-reverse; }
+  .vp-actions button { width: 100%; }
+}
+.mushaf-footer {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(28, 42, 58, 0.08);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  direction: ltr;
+}
+
+@media (max-width: 700px) {
+  .mushaf-filters {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+  .mushaf-filters .btn-search {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  .mushaf-nav {
+    padding: 12px;
+    gap: 10px;
+  }
+  .mushaf-nav-top {
+    flex-wrap: wrap;
+  }
+  .mushaf-meta {
+    width: 100%;
+    text-align: center;
+    order: -1;
+    font-size: 14px;
+  }
+  .mushaf-nav-pager {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "jump jump"
+      "next prev";
+    gap: 10px;
+  }
+  .mushaf-page-jump {
+    grid-area: jump;
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+  }
+  .mushaf-nav-pager .btn-next,
+  .mushaf-nav-pager .btn-prev {
+    max-width: none;
+    width: 100%;
+    justify-self: stretch;
+  }
+  .mushaf-nav-pager .btn-next { grid-area: next; }
+  .mushaf-nav-pager .btn-prev { grid-area: prev; }
+  .mushaf-page {
+    padding: 14px 10px;
+    border-radius: 16px;
+  }
+  .search-results table td.ar {
+    font-size: 14px;
+    max-width: 240px;
+  }
+}
+
+@media (max-width: 420px) {
+  .mushaf-filters {
+    grid-template-columns: 1fr;
+  }
+  .mushaf-nav-pager .btn-nav,
+  .mushaf-page-jump .btn-go {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .mushaf-page-jump input[type="number"] { width: 64px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<form class="panel" method="get" action="{% url 'dash-quran' %}" style="padding-bottom:16px;">
+  <h2>Axtarış</h2>
+  <div class="mushaf-filters">
+    <div>
+      <label for="surah_num">Surə №</label>
+      <input id="surah_num" type="number" name="surah_num" min="1" max="114"
+        value="{{ surah_num }}" placeholder="1–114" />
+    </div>
+    <div class="q-field">
+      <label for="q_ar">Ərəbcə ayə / söz</label>
+      <input id="q_ar" type="search" name="q" dir="rtl" lang="ar"
+        value="{{ q_ar }}" placeholder="ٱلْحَمْدُ …" autocomplete="off" />
+    </div>
+    <button type="submit" class="btn-search">Axtar</button>
+  </div>
+  <p class="mushaf-hint">
+    Surə nömrəsi ilə keçid; ərəbcə axtarış hərəkəsiz də işləyir.
+    {% if surah_num %}Axtarış bu surəyə məhdudlaşır.{% endif %}
+  </p>
+</form>
+
+{% if q_ar %}
+<div class="panel search-results">
+  <h2>Nəticələr · {{ search_hits|length }}{% if search_hits|length >= 80 %}+{% endif %}</h2>
+  {% if search_hits %}
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Ayə</th>
+        <th>Səhifə</th>
+        <th>Mətn</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in search_hits %}
+      <tr>
+        <td>
+          <a class="hit" href="{% url 'dash-quran' %}?verse={{ h.verseKey }}&amp;q={{ q_ar|urlencode }}{% if surah_num %}&amp;surah_num={{ surah_num }}{% endif %}">
+            {{ h.nameAz }} {{ h.ayahNumber }}
+          </a>
+          <div class="muted">{{ h.verseKey }}</div>
+        </td>
+        <td>{% if h.page %}{{ h.page }}{% else %}—{% endif %}</td>
+        <td class="ar">{{ h.text }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="empty">Uyğun ayə tapılmadı.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+<form class="mushaf-nav" method="get" action="{% url 'dash-quran' %}">
+  {% if q_ar %}<input type="hidden" name="q" value="{{ q_ar }}" />{% endif %}
+  {% if surah_num %}<input type="hidden" name="surah_num" value="{{ surah_num }}" />{% endif %}
+
+  <div class="mushaf-nav-top">
+    <select name="surah" aria-label="Surə"
+      onchange="window.location='{% url 'dash-quran' %}?surah='+encodeURIComponent(this.value)">
+      {% for s in surahs %}
+      <option value="{{ s.id }}" {% if current_surah and current_surah.id == s.id %}selected{% endif %}>
+        {{ s.id }}. {{ s.nameAz }}
+      </option>
+      {% endfor %}
+    </select>
+    <span class="mushaf-meta">{{ page_num }} / {{ page_count }}{% if highlight_verse %} · {{ highlight_verse }}{% endif %}</span>
+  </div>
+
+  <div class="mushaf-nav-pager">
+    {% if next_page %}
+    <a class="btn-nav btn-next" href="{% url 'dash-quran' %}?page={{ next_page }}{% if q_ar %}&amp;q={{ q_ar|urlencode }}{% endif %}{% if surah_num %}&amp;surah_num={{ surah_num }}{% endif %}" title="Növbəti səhifə">← Sonra</a>
+    {% else %}
+    <span class="btn-nav btn-next disabled">← Sonra</span>
+    {% endif %}
+
+    <div class="mushaf-page-jump">
+      <label class="page-label" for="page_jump">Səhifə</label>
+      <input id="page_jump" type="number" name="page" min="1" max="{{ page_count }}" value="{{ page_num }}" />
+      <button type="submit" class="btn-go">Get</button>
+    </div>
+
+    {% if prev_page %}
+    <a class="btn-nav btn-prev" href="{% url 'dash-quran' %}?page={{ prev_page }}{% if q_ar %}&amp;q={{ q_ar|urlencode }}{% endif %}{% if surah_num %}&amp;surah_num={{ surah_num }}{% endif %}" title="Əvvəlki səhifə">Əvvəl →</a>
+    {% else %}
+    <span class="btn-nav btn-prev disabled">Əvvəl →</span>
+    {% endif %}
+  </div>
+</form>
+
+{% if not mushaf_ready %}
+<div class="panel">
+  <p class="empty">
+    Mushaf məlumatı tapılmadı. <code>QURAN_APP_DIR</code> yolu düzgün olmalıdır
+    (quran-app/src/data/qcf4/pages).
+  </p>
+</div>
+{% else %}
+<div class="mushaf-stage">
+  <article class="mushaf-page" aria-label="Məshəf səhifəsi {{ page_num }}">
+    {% if current_surah %}
+    <div class="mushaf-header">
+      <div class="ar">{{ current_surah.nameAr }}</div>
+      <div class="az">{{ current_surah.nameAz }}{% if page.surahs %} · ayə {{ page.surahs.0.verse_start }}–{{ page.surahs.0.verse_end }}{% endif %}</div>
+    </div>
+    {% endif %}
+
+    {% for line in page.lines %}
+    <div class="mushaf-line" data-line="{{ line.line }}">
+      {% for w in line.words %}
+      {% if w.verse_key and w.type == 'word' or w.verse_key and w.type == 'end' %}
+      <span
+        class="mushaf-glyph{% if w.highlight %} is-hit{% endif %} is-tap"
+        style="font-family: '{{ w.font }}', serif;"
+        data-verse="{{ w.verse_key }}"
+        data-text="{{ w.text }}"
+        data-type="{{ w.type }}"
+        data-position="{{ w.position }}"
+      >{{ w.char }}</span>
+      {% else %}
+      <span
+        class="mushaf-glyph{% if w.type == 'surah_header' %} is-header{% elif w.type == 'bismillah' %} is-bismillah{% endif %}{% if w.highlight %} is-hit{% endif %}"
+        style="font-family: '{{ w.font }}', serif;"
+      >{{ w.char }}</span>
+      {% endif %}
+      {% endfor %}
+    </div>
+    {% endfor %}
+
+    <div class="mushaf-footer">Səhifə {{ page_num }}</div>
+  </article>
+</div>
+
+{# Vəqf / İstinaf popup #}
+<div class="vp-backdrop" id="vpBackdrop" aria-hidden="true">
+  <div class="vp-modal" role="dialog" aria-modal="true" aria-labelledby="vpTitle" id="vpModal">
+    <div class="vp-head">
+      <div class="vp-head-main">
+        <h3 id="vpTitle">Vəqf / İstinaf</h3>
+        <p class="vp-sub" id="vpMeta">—</p>
+        <div class="vp-arabic" id="vpArabic" dir="rtl"></div>
+        <div class="vp-legend" id="vpLegend">
+          <div class="vp-leg-item">
+            <span class="vp-leg-ico is-waqf" aria-hidden="true">■</span>
+            <span class="vp-leg-dot is-waqf" aria-hidden="true"></span>
+            <span><span class="vp-leg-em">Qırmızı</span> — vəqfi bildirir</span>
+          </div>
+          <div class="vp-leg-item">
+            <span class="vp-leg-ico is-istinaf" aria-hidden="true">◀</span>
+            <span class="vp-leg-dot is-istinaf" aria-hidden="true"></span>
+            <span><span class="vp-leg-em">Yaşıl</span> — istināfı bildirir</span>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="vp-close" id="vpClose" aria-label="Bağla">×</button>
+    </div>
+
+    <div class="vp-body">
+      <div class="vp-grid">
+        <div class="vp-section">
+          <h4>Vəqf</h4>
+          <div class="vp-field">
+            <label for="vpWaqfNote">Qeyd <span style="font-weight:500;opacity:.7">(istəyə bağlı)</span></label>
+            <textarea id="vpWaqfNote" placeholder="Vəqf izahı…" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="vp-section">
+          <h4>İstinaf</h4>
+          <div class="vp-field">
+            <label for="vpIstinafNote">Qeyd <span style="font-weight:500;opacity:.7">(istəyə bağlı)</span></label>
+            <textarea id="vpIstinafNote" placeholder="İstinaf izahı…" rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="vp-actions">
+      <button type="button" class="vp-btn-cancel" id="vpCancel">Bağla</button>
+      <button type="button" class="vp-btn-delete" id="vpDelete" hidden>Sil</button>
+      <button type="button" class="vp-btn-save" id="vpSave">Yadda saxla</button>
+    </div>
+  </div>
+</div>
+
+{# Söz seçimi — kopyala tipli kiçik panel #}
+<div class="vp-sel-bubble" id="vpSelBubble" aria-hidden="true">
+  <div class="vp-sel-ar" id="vpSelAr" dir="rtl"></div>
+  <div class="vp-sel-meta" id="vpSelMeta"></div>
+  <button type="button" id="vpSelCopy">Kopyala</button>
+  <button type="button" class="vp-sel-open" id="vpSelOpen">Vəqf / İstinaf</button>
+  <button type="button" class="vp-sel-delete" id="vpSelDelete" hidden>Sil</button>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var backdrop = document.getElementById('vpBackdrop');
+  if (!backdrop) return;
+  var page = document.querySelector('.mushaf-page');
+  var meta = document.getElementById('vpMeta');
+  var arabic = document.getElementById('vpArabic');
+  var waqfNote = document.getElementById('vpWaqfNote');
+  var istinafNote = document.getElementById('vpIstinafNote');
+  var bubble = document.getElementById('vpSelBubble');
+  var saveBtn = document.getElementById('vpSave');
+  var deleteBtn = document.getElementById('vpDelete');
+  var copyBtn = document.getElementById('vpSelCopy');
+  var selDeleteBtn = document.getElementById('vpSelDelete');
+  var wordGlyphs = Array.prototype.slice.call(
+    document.querySelectorAll('.mushaf-glyph.is-tap[data-type="word"]')
+  );
+  var allTapGlyphs = Array.prototype.slice.call(
+    document.querySelectorAll('.mushaf-glyph.is-tap')
+  );
+  var inkLookup = {};
+  var lastInfo = null;
+  var activeNoteId = null;
+  var picked = [];
+  var dragAnchor = -1;
+  var dragging = false;
+
+  function hideBubble() {
+    bubble.classList.remove('open');
+    bubble.setAttribute('aria-hidden', 'true');
+  }
+
+  function glyphIndex(el) {
+    return wordGlyphs.indexOf(el);
+  }
+
+  function wordGlyphFromEvent(e) {
+    var t = e.target;
+    if (!t || !t.closest) return null;
+    var g = t.closest('.mushaf-glyph.is-tap');
+    if (!g || !page.contains(g)) return null;
+    if (g.getAttribute('data-type') !== 'word') return null;
+    return g;
+  }
+
+  function clearPickVisual() {
+    allTapGlyphs.forEach(function (g) {
+      g.classList.remove('is-picked');
+    });
+  }
+
+  function applyPickRange(fromIdx, toIdx) {
+    var a = Math.min(fromIdx, toIdx);
+    var b = Math.max(fromIdx, toIdx);
+    picked = wordGlyphs.slice(a, b + 1);
+    clearPickVisual();
+    picked.forEach(function (g) {
+      g.classList.add('is-picked');
+    });
+    lastInfo = infoFromGlyphs(picked);
+    activeNoteId = noteIdForPicked();
+    syncDeleteButtons();
+    if (lastInfo && lastInfo.phrase) placeBubbleNearPicked();
+    else hideBubble();
+  }
+
+  function noteIdForPicked() {
+    var ids = {};
+    picked.forEach(function (g) {
+      var v = g.getAttribute('data-verse') || '';
+      var pos = g.getAttribute('data-position') || '';
+      var mark = inkLookup[v + ':' + pos];
+      if (mark && mark.noteId != null) ids[String(mark.noteId)] = true;
+    });
+    var keys = Object.keys(ids);
+    if (keys.length === 1) return parseInt(keys[0], 10);
+    return null;
+  }
+
+  function syncDeleteButtons() {
+    var show = activeNoteId != null;
+    if (deleteBtn) {
+      deleteBtn.hidden = !show;
+      deleteBtn.disabled = false;
+      deleteBtn.textContent = 'Sil';
+    }
+    if (selDeleteBtn) selDeleteBtn.hidden = !show;
+  }
+
+  function clearSelection() {
+    picked = [];
+    dragAnchor = -1;
+    dragging = false;
+    lastInfo = null;
+    activeNoteId = null;
+    clearPickVisual();
+    syncDeleteButtons();
+    hideBubble();
+  }
+
+  function infoFromGlyphs(list) {
+    if (!list.length) return null;
+    var words = [];
+    var texts = [];
+    var verses = [];
+    list.forEach(function (g) {
+      var typ = g.getAttribute('data-type') || 'word';
+      if (typ !== 'word') return;
+      var t = (g.getAttribute('data-text') || '').trim();
+      var v = g.getAttribute('data-verse') || '';
+      var pos = parseInt(g.getAttribute('data-position') || '0', 10);
+      if (!v || !pos) return;
+      words.push({ verseKey: v, position: pos, text: t });
+      if (t) texts.push(t);
+      if (verses.indexOf(v) === -1) verses.push(v);
+    });
+    if (!words.length) return null;
+    var phrase = texts.join(' ');
+    var verseLabel = '';
+    if (verses.length === 1) verseLabel = verses[0];
+    else if (verses.length > 1) verseLabel = verses[0] + ' – ' + verses[verses.length - 1];
+    return {
+      words: words,
+      phrase: phrase,
+      meta: verseLabel + (words.length > 1 ? ' · ' + words.length + ' söz' : ' · söz'),
+    };
+  }
+
+  function placeBubbleNearPicked() {
+    if (!picked.length) {
+      hideBubble();
+      return;
+    }
+    var left = Infinity;
+    var right = -Infinity;
+    var top = Infinity;
+    var bottom = -Infinity;
+    picked.forEach(function (g) {
+      var r = g.getBoundingClientRect();
+      left = Math.min(left, r.left);
+      right = Math.max(right, r.right);
+      top = Math.min(top, r.top);
+      bottom = Math.max(bottom, r.bottom);
+    });
+    bubble.classList.add('open');
+    bubble.setAttribute('aria-hidden', 'false');
+    bubble.style.visibility = 'hidden';
+    bubble.style.left = '0px';
+    bubble.style.top = '0px';
+    var bw = bubble.offsetWidth;
+    var bh = bubble.offsetHeight;
+    var cx = (left + right) / 2;
+    var bx = Math.max(8, Math.min(window.innerWidth - bw - 8, cx - bw / 2));
+    var by = top - bh - 8;
+    if (by < 8) by = bottom + 8;
+    bubble.style.left = bx + 'px';
+    bubble.style.top = by + 'px';
+    bubble.style.visibility = 'visible';
+  }
+
+  function writeClipboard(text) {
+    if (!text) return Promise.reject(new Error('empty'));
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        if (document.execCommand('copy')) resolve();
+        else reject(new Error('execCommand failed'));
+      } catch (err) {
+        reject(err);
+      } finally {
+        document.body.removeChild(ta);
+      }
+    });
+  }
+
+  function paintInk() {
+    allTapGlyphs.forEach(function (g) {
+      g.classList.remove('is-ink-waqf', 'is-ink-istinaf', 'is-ink-grad');
+      g.style.removeProperty('color');
+      g.style.removeProperty('-webkit-text-fill-color');
+      g.style.removeProperty('background');
+      g.style.removeProperty('-webkit-background-clip');
+      g.style.removeProperty('background-clip');
+      var v = g.getAttribute('data-verse') || '';
+      var pos = g.getAttribute('data-position') || '';
+      var mark = inkLookup[v + ':' + pos];
+      if (!mark) return;
+      if (mark.textGradient && mark.textGradient.length) {
+        g.classList.add('is-ink-grad');
+      } else if (mark.color === '#E53935') {
+        g.classList.add('is-ink-waqf');
+      } else if (mark.color === '#43A047') {
+        g.classList.add('is-ink-istinaf');
+      } else if (mark.color) {
+        g.style.color = mark.color;
+      }
+    });
+  }
+
+  function applyPack(pack) {
+    inkLookup = {};
+    (pack.ink_marks || []).forEach(function (m) {
+      if (!m || !m.verseKey || !m.position) return;
+      var noteId = m.noteId != null ? m.noteId : m.note_id;
+      inkLookup[m.verseKey + ':' + m.position] = {
+        color: m.color,
+        textGradient: m.textGradient,
+        noteId: noteId != null ? Number(noteId) : null,
+      };
+    });
+    paintInk();
+  }
+
+  function loadMarks() {
+    fetch('/api/word-marks/', { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) { if (data) applyPack(data); })
+      .catch(function () {});
+  }
+
+  function renderMarkedArabic(info) {
+    arabic.innerHTML = '';
+    if (!info || !info.words || !info.words.length) {
+      arabic.textContent = '—';
+      return;
+    }
+    var words = info.words;
+    var n = words.length;
+    words.forEach(function (w, i) {
+      var role = 'mid';
+      var ico = '';
+      if (n === 1) {
+        role = 'both';
+        ico = '◆';
+      } else if (i === 0) {
+        role = 'istinaf';
+        ico = '◀';
+      } else if (i === n - 1) {
+        role = 'waqf';
+        ico = '■';
+      }
+
+      var wrap = document.createElement('span');
+      wrap.className = 'vp-word is-' + role;
+
+      if (ico) {
+        var iconEl = document.createElement('span');
+        iconEl.className = 'vp-word-ico is-' + role;
+        iconEl.setAttribute('aria-hidden', 'true');
+        iconEl.textContent = ico;
+        wrap.appendChild(iconEl);
+      }
+
+      var txt = document.createElement('span');
+      txt.className = 'vp-word-txt';
+      txt.textContent = w.text || '';
+      wrap.appendChild(txt);
+
+      arabic.appendChild(wrap);
+    });
+  }
+
+  function openModal() {
+    if (!lastInfo) lastInfo = infoFromGlyphs(picked);
+    if (!lastInfo) return;
+    activeNoteId = noteIdForPicked();
+    meta.textContent = lastInfo.meta;
+    renderMarkedArabic(lastInfo);
+    waqfNote.value = '';
+    istinafNote.value = '';
+    syncDeleteButtons();
+    hideBubble();
+    backdrop.classList.add('open');
+    backdrop.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeModal() {
+    backdrop.classList.remove('open');
+    backdrop.setAttribute('aria-hidden', 'true');
+  }
+
+  function deleteAnnotation() {
+    if (activeNoteId == null) return;
+    if (!confirm('Bu işarəni silmək istəyirsiniz?')) return;
+    var id = activeNoteId;
+    if (deleteBtn) {
+      deleteBtn.disabled = true;
+      deleteBtn.textContent = 'Silinir…';
+    }
+    fetch('/api/word-marks/' + id + '/', {
+      method: 'DELETE',
+      headers: { Accept: 'application/json' },
+    })
+      .then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok) throw new Error((data && data.error) || 'Xəta');
+          return data;
+        });
+      })
+      .then(function (data) {
+        applyPack(data);
+        closeModal();
+        clearSelection();
+      })
+      .catch(function (err) {
+        alert(err.message || 'Silinmədi');
+      })
+      .finally(function () {
+        if (deleteBtn) {
+          deleteBtn.disabled = false;
+          deleteBtn.textContent = 'Sil';
+        }
+        syncDeleteButtons();
+      });
+  }
+
+  function saveAnnotation() {
+    if (!lastInfo || !lastInfo.words || !lastInfo.words.length) {
+      alert('Söz seçin');
+      return;
+    }
+    var waqf = (waqfNote.value || '').trim();
+    var istinaf = (istinafNote.value || '').trim();
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saxlanılır…';
+    fetch('/api/word-marks/', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        words: lastInfo.words,
+        waqf_note: waqf,
+        istinaf_note: istinaf,
+      }),
+    })
+      .then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok) throw new Error((data && data.error) || 'Xəta');
+          return data;
+        });
+      })
+      .then(function (data) {
+        applyPack(data);
+        closeModal();
+        clearSelection();
+      })
+      .catch(function (err) {
+        alert(err.message || 'Saxlanılmadı');
+      })
+      .finally(function () {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Yadda saxla';
+      });
+  }
+
+  if (page) {
+    page.addEventListener('pointerdown', function (e) {
+      if (backdrop.classList.contains('open')) return;
+      if (e.button != null && e.button !== 0) return;
+      var g = wordGlyphFromEvent(e);
+      if (!g) {
+        if (!bubble.contains(e.target)) clearSelection();
+        return;
+      }
+      var idx = glyphIndex(g);
+      if (idx < 0) return;
+      e.preventDefault();
+      try { page.setPointerCapture(e.pointerId); } catch (err) {}
+
+      if (e.shiftKey && dragAnchor >= 0) {
+        applyPickRange(dragAnchor, idx);
+        dragging = false;
+        return;
+      }
+
+      dragAnchor = idx;
+      dragging = true;
+      applyPickRange(idx, idx);
+    });
+
+    page.addEventListener('pointermove', function (e) {
+      if (!dragging || dragAnchor < 0) return;
+      var g = wordGlyphFromEvent(e);
+      if (!g) {
+        // elementFromPoint — sürətli sürükləmədə target boş ola bilər
+        var el = document.elementFromPoint(e.clientX, e.clientY);
+        g = el && el.closest ? el.closest('.mushaf-glyph.is-tap') : null;
+        if (g && g.getAttribute('data-type') !== 'word') g = null;
+      }
+      if (!g) return;
+      var idx = glyphIndex(g);
+      if (idx < 0) return;
+      applyPickRange(dragAnchor, idx);
+    });
+
+    page.addEventListener('pointerup', function () {
+      dragging = false;
+    });
+    page.addEventListener('pointercancel', function () {
+      dragging = false;
+    });
+
+    page.addEventListener('copy', function (e) {
+      var text = (lastInfo && lastInfo.phrase) || '';
+      if (!text) return;
+      e.preventDefault();
+      e.clipboardData.setData('text/plain', text);
+    });
+  }
+
+  bubble.addEventListener('mousedown', function (e) {
+    e.preventDefault();
+  });
+
+  copyBtn.addEventListener('click', function () {
+    var text = (lastInfo && lastInfo.phrase) || '';
+    if (!text) return;
+    var prev = copyBtn.textContent;
+    writeClipboard(text)
+      .then(function () {
+        copyBtn.textContent = 'Kopyalandı';
+        setTimeout(function () { copyBtn.textContent = prev; }, 1200);
+      })
+      .catch(function () {
+        copyBtn.textContent = 'Xəta';
+        setTimeout(function () { copyBtn.textContent = prev; }, 1200);
+      });
+  });
+
+  document.getElementById('vpSelOpen').addEventListener('click', openModal);
+  document.getElementById('vpClose').addEventListener('click', closeModal);
+  document.getElementById('vpCancel').addEventListener('click', closeModal);
+  if (deleteBtn) deleteBtn.addEventListener('click', deleteAnnotation);
+  if (selDeleteBtn) selDeleteBtn.addEventListener('click', deleteAnnotation);
+  backdrop.addEventListener('click', function (e) {
+    if (e.target === backdrop) closeModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if (backdrop.classList.contains('open')) closeModal();
+      else clearSelection();
+    }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
+      if (!lastInfo || !lastInfo.phrase) return;
+      if (backdrop.classList.contains('open')) return;
+      // copy event on page may not fire if focus elsewhere
+      e.preventDefault();
+      writeClipboard(lastInfo.phrase).catch(function () {});
+    }
+  });
+  saveBtn.addEventListener('click', saveAnnotation);
+  window.addEventListener('scroll', function () {
+    if (bubble.classList.contains('open') && picked.length) placeBubbleNearPicked();
+  }, true);
+
+  loadMarks();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,31 @@
+# Render Blueprint — Root Directory: quran-backend
+# Disk: SQLite + media (DATA_DIR=/var/data)
+
+services:
+  - type: web
+    name: quran-backend
+    runtime: python
+    plan: starter
+    pythonVersion: "3.12.8"
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: bash scripts/start.sh
+    healthCheckPath: /api/health
+    disk:
+      name: quran-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: DATA_DIR
+        value: /var/data
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: "2"
+      - key: QURAN_APP_DIR
+        value: ../quran-app

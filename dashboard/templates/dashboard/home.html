@@ -1,0 +1,31 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Ana · Miras{% endblock %}
+{% block page_title %}Ana səhifə{% endblock %}
+{% block page_sub %}Miras məzmun idarəetməsi{% endblock %}
+
+{% block content %}
+<div class="feature-grid" style="margin-bottom: 22px;">
+  <a class="feature-card wide g-last" href="{% url 'dash-summaries' %}">
+    <div>
+      <div style="opacity:.9;font-size:13px;font-weight:600;">İdarə paneli</div>
+      <h3>Xülasələr · Quran · Qarilər</h3>
+      <p>Məzmunu buradan idarə edin</p>
+    </div>
+    <div class="feature-icon">◈</div>
+  </a>
+
+  <a class="feature-card g-meal" href="{% url 'dash-summaries' %}">
+    <div class="feature-icon">📘</div>
+    <h3>Xülasələr</h3>
+  </a>
+  <a class="feature-card g-quran" href="{% url 'dash-quran' %}">
+    <div class="feature-icon">📖</div>
+    <h3>Quran</h3>
+  </a>
+  <a class="feature-card g-reciters" href="{% url 'dash-reciters' %}">
+    <div class="feature-icon">🎤</div>
+    <h3>Qarilər</h3>
+  </a>
+</div>
+{% endblock %}

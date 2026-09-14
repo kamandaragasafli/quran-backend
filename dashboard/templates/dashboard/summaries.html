@@ -1,0 +1,236 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Xülasələr · Miras{% endblock %}
+{% block page_title %}Xülasələr{% endblock %}
+{% block page_sub %}Surə və ya ayə seçib mətn yazın · siyahıdan «Düzəliş» ilə redaktə edin{% endblock %}
+
+{% block extra_css %}
+<style>
+.xu-form-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr 120px;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+@media (max-width: 700px) {
+  .xu-form-grid { grid-template-columns: 1fr 1fr; }
+  .xu-form-grid .xu-surah { grid-column: 1 / -1; }
+}
+.xu-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.xu-field.full { grid-column: 1 / -1; }
+.xu-field label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.xu-field select,
+.xu-field input,
+.xu-field textarea {
+  width: 100%;
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 12px;
+  padding: 11px 12px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+}
+.xu-field textarea {
+  min-height: 180px;
+  font-weight: 500;
+  line-height: 1.55;
+  resize: vertical;
+}
+.xu-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+.xu-btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 11px 18px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8EC5FF, #5B9DFF);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-flex;
+}
+.xu-btn:hover { filter: brightness(1.05); text-decoration: none; color: #fff; }
+.xu-btn.ghost {
+  background: var(--bg-soft);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.xu-btn.danger {
+  background: rgba(196, 92, 74, 0.12);
+  color: #b54538;
+  border: 1px solid rgba(196, 92, 74, 0.25);
+  padding: 6px 10px;
+  font-size: 12px;
+}
+.xu-btn.edit {
+  background: rgba(91, 157, 255, 0.12);
+  color: #3A7AD9;
+  border: 1px solid rgba(91, 157, 255, 0.28);
+  padding: 6px 10px;
+  font-size: 12px;
+}
+.xu-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.xu-list-item {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.xu-list-item:last-child { border-bottom: none; }
+.xu-list-item a {
+  font-weight: 800;
+  color: var(--text);
+  text-decoration: none;
+}
+.xu-list-item a:hover { color: #3A7AD9; }
+.xu-preview {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+.xu-alert {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  background: rgba(62, 207, 142, 0.14);
+  color: #1F9A8F;
+  border: 1px solid rgba(43, 187, 173, 0.28);
+}
+.xu-alert.err {
+  background: rgba(196, 92, 74, 0.12);
+  color: #b54538;
+  border-color: rgba(196, 92, 74, 0.28);
+}
+#ayah-wrap.is-hidden { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if flash %}
+<div class="xu-alert {% if flash_err %}err{% endif %}">{{ flash }}</div>
+{% endif %}
+
+<div class="panel">
+  <h2>{% if edit %}Redaktə · {{ edit.label }}{% else %}Yeni xülasə{% endif %}</h2>
+  <form method="post" action="{% url 'dash-summaries' %}">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save" />
+    {% if edit %}<input type="hidden" name="id" value="{{ edit.id }}" />{% endif %}
+
+    <div class="xu-form-grid">
+      <div class="xu-field">
+        <label for="scope">Səviyyə</label>
+        <select name="scope" id="scope">
+          <option value="surah" {% if form.scope == 'surah' %}selected{% endif %}>Surə</option>
+          <option value="ayah" {% if form.scope == 'ayah' %}selected{% endif %}>Ayə</option>
+        </select>
+      </div>
+      <div class="xu-field xu-surah">
+        <label for="surah">Surə</label>
+        <select name="surah" id="surah" required>
+          <option value="">— seçin —</option>
+          {% for s in surahs %}
+          <option value="{{ s.id }}" {% if form.surah == s.id %}selected{% endif %}>
+            {{ s.id }}. {{ s.nameAz }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="xu-field" id="ayah-wrap">
+        <label for="ayah">Ayə №</label>
+        <input type="number" name="ayah" id="ayah" min="1" max="286"
+          value="{{ form.ayah }}" placeholder="1" />
+      </div>
+    </div>
+
+    <div class="xu-field full" style="margin-bottom:14px">
+      <label for="text">Mətn</label>
+      <textarea name="text" id="text" required placeholder="Xülasə mətnini yazın…">{{ form.text }}</textarea>
+    </div>
+
+    <div class="xu-actions">
+      <button type="submit" class="xu-btn">{% if edit %}Yenilə{% else %}Yadda saxla{% endif %}</button>
+      {% if edit %}
+      <a class="xu-btn ghost" href="{% url 'dash-summaries' %}">Ləğv et</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<div class="panel">
+  <h2>Saxlanılmış · {{ notes|length }}</h2>
+  {% if notes %}
+  {% for n in notes %}
+  <div class="xu-list-item">
+    <div>
+      <a href="{% url 'dash-summaries' %}?edit={{ n.id }}">{{ n.label }}</a>
+      <span class="badge" style="margin-left:8px">{% if n.scope == 'ayah' %}Ayə{% else %}Surə{% endif %}</span>
+      <div class="xu-preview">{{ n.text|truncatechars:180 }}</div>
+      <div class="muted" style="font-size:12px;margin-top:4px;font-weight:600">
+        {{ n.updated_at|date:"d.m.Y H:i" }}
+      </div>
+    </div>
+    <div class="xu-item-actions">
+      <a class="xu-btn edit" href="{% url 'dash-summaries' %}?edit={{ n.id }}">Düzəliş</a>
+      <form method="post" action="{% url 'dash-summaries' %}" onsubmit="return confirm('Silinsin?');">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete" />
+        <input type="hidden" name="id" value="{{ n.id }}" />
+        <button type="submit" class="xu-btn danger" style="width:100%">Sil</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <p class="empty">Hələ xülasə yoxdur. Yuxarıda surə və ya ayə seçib mətn yazın.</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var scope = document.getElementById('scope');
+  var wrap = document.getElementById('ayah-wrap');
+  var ayah = document.getElementById('ayah');
+  function sync() {
+    var isAyah = scope.value === 'ayah';
+    wrap.classList.toggle('is-hidden', !isAyah);
+    ayah.required = isAyah;
+    if (!isAyah) ayah.value = '';
+  }
+  scope.addEventListener('change', sync);
+  sync();
+})();
+</script>
+{% endblock %}
