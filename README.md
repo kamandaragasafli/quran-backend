@@ -26,6 +26,15 @@ python manage.py runserver 0.0.0.0:8787
 
 SQLite: `data/chat.db` (və ya `DATA_DIR/chat.db`). Dashboard əlavələri burada qalır.
 
+**Surələr / məshəf DB-də deyil** — `quran-backend/data/mushaf/` içindədir (tətbiq yükləmək lazım deyil):
+
+- `surah-meta.json` — 114 surə
+- `pages/*.json` — 604 səhifə
+- `fonts/*.ttf` — QCF fontlar
+- `tanzil-simple-clean.json` — axtarış
+
+Yoxlama: `GET /api/health` → `mushaf.surah_count: 114`, `mushaf.pages_ok: true`.
+
 ## API
 
 | Method | Path | Təsvir |

@@ -21,9 +21,23 @@ def quran_app_dir() -> Path:
     return Path(settings.QURAN_APP_DIR).resolve()
 
 
+def bundled_mushaf_dir() -> Path:
+    return Path(settings.BASE_DIR) / 'data' / 'mushaf'
+
+
+def _prefer_file(*candidates: Path) -> Path:
+    for p in candidates:
+        if p.is_file():
+            return p
+    return candidates[-1]
+
+
 @lru_cache(maxsize=1)
 def load_tanzil() -> dict[str, list[str]]:
-    path = quran_app_dir() / 'assets' / 'data' / 'tanzil-simple-clean.json'
+    path = _prefer_file(
+        bundled_mushaf_dir() / 'tanzil-simple-clean.json',
+        quran_app_dir() / 'assets' / 'data' / 'tanzil-simple-clean.json',
+    )
     if not path.is_file():
         return {}
     data = json.loads(path.read_text(encoding='utf-8'))
@@ -32,7 +46,10 @@ def load_tanzil() -> dict[str, list[str]]:
 
 @lru_cache(maxsize=1)
 def load_verse_to_page() -> dict[str, int]:
-    path = quran_app_dir() / 'src' / 'data' / 'qcf4' / 'verse-to-page.json'
+    path = _prefer_file(
+        bundled_mushaf_dir() / 'verse-to-page.json',
+        quran_app_dir() / 'src' / 'data' / 'qcf4' / 'verse-to-page.json',
+    )
     if not path.is_file():
         return {}
     return json.loads(path.read_text(encoding='utf-8'))

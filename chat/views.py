@@ -9,7 +9,9 @@ from .models import ChatGroup, ChatMessage
 
 @api_view(['GET'])
 def health(_request):
-    return Response({'ok': True})
+    from dashboard.mushaf import mushaf_status
+
+    return Response({'ok': True, 'mushaf': mushaf_status()})
 
 
 @api_view(['GET'])

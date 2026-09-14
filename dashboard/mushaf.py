@@ -1,4 +1,7 @@
-"""QCF4 Madinah mushaf — reads page JSON + fonts from quran-app."""
+"""QCF4 Madinah mushaf — self-contained under data/mushaf/ (quran-app lazım deyil).
+
+İstəyə görə QURAN_APP_DIR varsa oradan oxuyur; yoxdursa backend data/mushaf.
+"""
 
 from __future__ import annotations
 
@@ -15,24 +18,47 @@ QCF_VERSE_PAGE_MOVE = {
 }
 
 
+def bundled_mushaf_dir() -> Path:
+    return Path(settings.BASE_DIR) / 'data' / 'mushaf'
+
+
 def quran_app_dir() -> Path:
     return Path(settings.QURAN_APP_DIR).resolve()
 
 
+def _prefer(*candidates: Path) -> Path:
+    for p in candidates:
+        if p.is_file() or p.is_dir():
+            return p
+    return candidates[-1]
+
+
 def pages_dir() -> Path:
-    return quran_app_dir() / 'src' / 'data' / 'qcf4' / 'pages'
+    return _prefer(
+        bundled_mushaf_dir() / 'pages',
+        quran_app_dir() / 'src' / 'data' / 'qcf4' / 'pages',
+    )
 
 
 def fonts_dir() -> Path:
-    return quran_app_dir() / 'assets' / 'fonts' / 'qcf4'
+    return _prefer(
+        bundled_mushaf_dir() / 'fonts',
+        quran_app_dir() / 'assets' / 'fonts' / 'qcf4',
+    )
 
 
 def surah_meta_path() -> Path:
-    return quran_app_dir() / 'assets' / 'data' / 'surah-meta.json'
+    return _prefer(
+        bundled_mushaf_dir() / 'surah-meta.json',
+        quran_app_dir() / 'assets' / 'data' / 'surah-meta.json',
+    )
 
 
 def surah_pages_path() -> Path:
-    return quran_app_dir() / 'src' / 'data' / 'qcf4' / 'surah-pages.json'
+    return _prefer(
+        bundled_mushaf_dir() / 'surah-pages.json',
+        quran_app_dir() / 'src' / 'data' / 'qcf4' / 'surah-pages.json',
+    )
 
 
 @lru_cache(maxsize=1)
@@ -51,6 +77,26 @@ def load_surah_start_pages() -> list[int]:
     return json.loads(path.read_text(encoding='utf-8'))
 
 
+def mushaf_status() -> dict:
+    """Dashboard / deploy diaqnostikası."""
+    meta = surah_meta_path()
+    pages = pages_dir()
+    fonts = fonts_dir()
+    page_count = 0
+    if pages.is_dir():
+        page_count = sum(1 for _ in pages.glob('*.json'))
+    return {
+        'source': 'bundled' if (bundled_mushaf_dir() / 'pages').is_dir() else 'quran_app',
+        'bundled_dir': str(bundled_mushaf_dir()),
+        'surah_meta': str(meta),
+        'surah_meta_ok': meta.is_file(),
+        'surah_count': len(load_surah_meta()),
+        'pages_dir': str(pages),
+        'pages_ok': page_count >= 600,
+        'page_json_count': page_count,
+        'fonts_dir': str(fonts),
+        'fonts_ok': fonts.is_dir() and any(fonts.glob('*.ttf')),
+    }
 def surah_start_page(surah_id: int) -> int:
     pages = load_surah_start_pages()
     idx = surah_id - 1

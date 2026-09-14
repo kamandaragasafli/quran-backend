@@ -3,7 +3,10 @@ __pycache__/
 *.py[cod]
 *.sqlite3
 .env
-data/
+# SQLite / runtime — məshəf assetləri (data/mushaf) git-də qalsın
+data/*.db
+data/*.sqlite3
+data/chat.db
 media/
 staticfiles/
 *.log
