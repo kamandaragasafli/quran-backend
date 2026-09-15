@@ -818,11 +818,10 @@
   </div>
 </div>
 
-{# Söz seçimi — kopyala tipli kiçik panel #}
+{# Söz seçimi paneli #}
 <div class="vp-sel-bubble" id="vpSelBubble" aria-hidden="true">
   <div class="vp-sel-ar" id="vpSelAr" dir="rtl"></div>
   <div class="vp-sel-meta" id="vpSelMeta"></div>
-  <button type="button" id="vpSelCopy">Kopyala</button>
   <button type="button" class="vp-sel-open" id="vpSelOpen">Vəqf / İstinaf</button>
   <button type="button" class="vp-sel-delete" id="vpSelDelete" hidden>Sil</button>
 </div>
@@ -840,7 +839,6 @@
   var bubble = document.getElementById('vpSelBubble');
   var saveBtn = document.getElementById('vpSave');
   var deleteBtn = document.getElementById('vpDelete');
-  var copyBtn = document.getElementById('vpSelCopy');
   var selDeleteBtn = document.getElementById('vpSelDelete');
   var wordGlyphs = Array.prototype.slice.call(
     document.querySelectorAll('.mushaf-glyph.is-tap[data-type="word"]')
@@ -1247,21 +1245,6 @@
 
   bubble.addEventListener('mousedown', function (e) {
     e.preventDefault();
-  });
-
-  copyBtn.addEventListener('click', function () {
-    var text = (lastInfo && lastInfo.phrase) || '';
-    if (!text) return;
-    var prev = copyBtn.textContent;
-    writeClipboard(text)
-      .then(function () {
-        copyBtn.textContent = 'Kopyalandı';
-        setTimeout(function () { copyBtn.textContent = prev; }, 1200);
-      })
-      .catch(function () {
-        copyBtn.textContent = 'Xəta';
-        setTimeout(function () { copyBtn.textContent = prev; }, 1200);
-      });
   });
 
   document.getElementById('vpSelOpen').addEventListener('click', openModal);
