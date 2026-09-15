@@ -11,6 +11,7 @@
   href="{% url 'dash-mushaf-font' f.file %}">
 {% endfor %}
 {% endif %}
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
 <style>
 {% if page and page.fonts %}
 {% for f in page.fonts %}
@@ -404,43 +405,56 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: center;
-  gap: 8px 12px;
-  padding: 12px 14px;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 22px 14px 12px;
   border-radius: 14px;
   background: #F8FAF9;
   border: 1px solid rgba(43,187,173,.18);
   direction: rtl;
   text-align: center;
+  font-family: "Amiri", "Traditional Arabic", "Scheherazade New", serif;
 }
 .vp-word {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
+  position: relative;
+  display: inline-block;
+  padding-top: 2px;
 }
 .vp-word-ico {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  margin-bottom: 2px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px; height: 16px;
-  border-radius: 4px;
-  font-size: 9px;
+  width: 14px; height: 14px;
+  border-radius: 3px;
+  font-size: 8px;
   line-height: 1;
   color: #fff;
+  pointer-events: none;
 }
 .vp-word-ico.is-waqf    { background: #E53935; }
 .vp-word-ico.is-istinaf { background: #43A047; }
-.vp-word-ico.is-both    { background: linear-gradient(90deg,#E53935,#43A047); width:20px; }
-.vp-word-txt { font-size: 22px; font-weight: 600; color: #1A2430; }
-.vp-word.is-waqf    .vp-word-txt { color: #E53935; }
-.vp-word.is-istinaf .vp-word-txt { color: #43A047; }
+.vp-word-ico.is-both    { background: linear-gradient(90deg,#E53935,#43A047); width:18px; }
+.vp-word-txt {
+  font-family: "Amiri", "Traditional Arabic", "Scheherazade New", serif;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: #1A2430;
+}
+.vp-word.is-waqf    .vp-word-txt { color: #E53935; font-weight: 700; }
+.vp-word.is-istinaf .vp-word-txt { color: #43A047; font-weight: 700; }
 .vp-word.is-both    .vp-word-txt {
   background: linear-gradient(90deg,#E53935 0%,#1A2430 48%,#43A047 100%);
   -webkit-background-clip: text; background-clip: text;
   color: transparent; -webkit-text-fill-color: transparent;
+  font-weight: 700;
 }
-.vp-word.is-mid .vp-word-txt { opacity: .65; }
+.vp-word.is-mid .vp-word-txt { opacity: .78; }
 .vp-close {
   appearance: none;
   border: none;
