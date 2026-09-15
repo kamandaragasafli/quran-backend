@@ -111,6 +111,14 @@ def word_marks(request):
     istinaf_note = str(
         request.data.get('istinaf_note') or request.data.get('istinafNote') or ''
     ).strip()
+    direction = str(
+        request.data.get('direction') or WordMarkNote.DIR_ISTINAF_FIRST
+    ).strip()
+    if direction not in (
+        WordMarkNote.DIR_ISTINAF_FIRST,
+        WordMarkNote.DIR_WAQF_FIRST,
+    ):
+        direction = WordMarkNote.DIR_ISTINAF_FIRST
 
     if not words:
         return Response({'error': 'Söz seçin'}, status=status.HTTP_400_BAD_REQUEST)
@@ -130,6 +138,7 @@ def word_marks(request):
 
     created = WordMarkNote.objects.create(
         words=words,
+        direction=direction,
         waqf_note=waqf_note,
         istinaf_note=istinaf_note,
     )

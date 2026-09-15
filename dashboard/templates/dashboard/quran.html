@@ -523,6 +523,57 @@
   color: var(--muted);
   margin: 0;
 }
+/* istiqamət seçimi */
+.vp-dir {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.vp-dir-btn {
+  appearance: none;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 8px;
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+  transition: border-color .12s, background .12s, box-shadow .12s;
+}
+.vp-dir-btn:hover { background: var(--bg-soft); }
+.vp-dir-btn.is-on {
+  border-color: rgba(43,187,173,.55);
+  background: rgba(43,187,173,.08);
+  box-shadow: 0 0 0 3px rgba(43,187,173,.1);
+}
+.vp-dir-title {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.vp-dir-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.vp-dir-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 10px;
+}
+.vp-dir-chip.is-waqf { background: #E53935; }
+.vp-dir-chip.is-istinaf { background: #43A047; }
+.vp-dir-arrow { color: var(--muted); font-size: 12px; }
 /* actions */
 .vp-actions {
   display: flex;
@@ -796,6 +847,25 @@
       </div>
 
       <div class="vp-body">
+        <div class="vp-dir" role="group" aria-label="İstiqamət">
+          <button type="button" class="vp-dir-btn is-on" id="vpDirIstinafFirst" data-dir="istinaf_first">
+            <span class="vp-dir-title">İstinaf → Vəqf</span>
+            <span class="vp-dir-flow">
+              <span class="vp-dir-chip is-istinaf">◀ Yaşıl</span>
+              <span class="vp-dir-arrow">→</span>
+              <span class="vp-dir-chip is-waqf">■ Qırmızı</span>
+            </span>
+          </button>
+          <button type="button" class="vp-dir-btn" id="vpDirWaqfFirst" data-dir="waqf_first">
+            <span class="vp-dir-title">Vəqf → İstinaf</span>
+            <span class="vp-dir-flow">
+              <span class="vp-dir-chip is-waqf">■ Qırmızı</span>
+              <span class="vp-dir-arrow">→</span>
+              <span class="vp-dir-chip is-istinaf">◀ Yaşıl</span>
+            </span>
+          </button>
+        </div>
+
         <div class="vp-section is-waqf">
           <h4>
             Vəqf
@@ -856,6 +926,16 @@
   var picked = [];
   var dragAnchor = -1;
   var dragging = false;
+  var markDirection = 'istinaf_first';
+  var dirBtnIstinaf = document.getElementById('vpDirIstinafFirst');
+  var dirBtnWaqf = document.getElementById('vpDirWaqfFirst');
+
+  function setDirection(dir) {
+    markDirection = dir === 'waqf_first' ? 'waqf_first' : 'istinaf_first';
+    if (dirBtnIstinaf) dirBtnIstinaf.classList.toggle('is-on', markDirection === 'istinaf_first');
+    if (dirBtnWaqf) dirBtnWaqf.classList.toggle('is-on', markDirection === 'waqf_first');
+    if (lastInfo) renderMarkedArabic(lastInfo);
+  }
 
   function hideBubble() {
     bubble.classList.remove('open');
@@ -1067,6 +1147,7 @@
     }
     var words = info.words;
     var n = words.length;
+    var reverse = markDirection === 'waqf_first';
     words.forEach(function (w, i) {
       var role = 'mid';
       var ico = '';
@@ -1074,11 +1155,11 @@
         role = 'both';
         ico = '◆';
       } else if (i === 0) {
-        role = 'istinaf';
-        ico = '◀';
+        role = reverse ? 'waqf' : 'istinaf';
+        ico = reverse ? '■' : '◀';
       } else if (i === n - 1) {
-        role = 'waqf';
-        ico = '■';
+        role = reverse ? 'istinaf' : 'waqf';
+        ico = reverse ? '◀' : '■';
       }
 
       var wrap = document.createElement('span');
@@ -1106,7 +1187,7 @@
     if (!lastInfo) return;
     activeNoteId = noteIdForPicked();
     meta.textContent = lastInfo.meta;
-    renderMarkedArabic(lastInfo);
+    setDirection('istinaf_first');
     syncDeleteButtons();
     hideBubble();
     backdrop.classList.add('open');
@@ -1168,6 +1249,7 @@
       },
       body: JSON.stringify({
         words: lastInfo.words,
+        direction: markDirection,
         waqf_note: '',
         istinaf_note: '',
       }),
@@ -1254,6 +1336,8 @@
   document.getElementById('vpSelOpen').addEventListener('click', openModal);
   document.getElementById('vpClose').addEventListener('click', closeModal);
   document.getElementById('vpCancel').addEventListener('click', closeModal);
+  if (dirBtnIstinaf) dirBtnIstinaf.addEventListener('click', function () { setDirection('istinaf_first'); });
+  if (dirBtnWaqf) dirBtnWaqf.addEventListener('click', function () { setDirection('waqf_first'); });
   if (deleteBtn) deleteBtn.addEventListener('click', deleteAnnotation);
   if (selDeleteBtn) selDeleteBtn.addEventListener('click', deleteAnnotation);
   backdrop.addEventListener('click', function (e) {

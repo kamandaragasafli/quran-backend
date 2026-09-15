@@ -47,9 +47,21 @@ class WordMarkNote(models.Model):
     Tətbiqdə: ink rəngi + AyahInfoSheet «Haqqında».
     """
 
+    DIR_ISTINAF_FIRST = 'istinaf_first'  # yaşıl → … → qırmızı
+    DIR_WAQF_FIRST = 'waqf_first'        # qırmızı → … → yaşıl
+    DIR_CHOICES = [
+        (DIR_ISTINAF_FIRST, 'İstinaf → Vəqf'),
+        (DIR_WAQF_FIRST, 'Vəqf → İstinaf'),
+    ]
+
     words = models.JSONField(
         default=list,
         help_text='[{"verseKey":"1:5","position":2,"text":"..."}]',
+    )
+    direction = models.CharField(
+        max_length=20,
+        choices=DIR_CHOICES,
+        default=DIR_ISTINAF_FIRST,
     )
     waqf_note = models.TextField(blank=True, default='')
     istinaf_note = models.TextField(blank=True, default='')
@@ -98,16 +110,19 @@ class WordMarkNote(models.Model):
         marks: list[dict] = []
         n = len(items)
 
-        # İki+ söz + hər iki tərəf: birinci yaşıl (istināf), sonuncu qırmızı (vəqf)
-        # Hər sözə gradient YOX
+        # İki+ söz + hər iki tərəf
         if n >= 2 and has_w and has_i:
             first = items[0]
             last = items[-1]
+            if self.direction == self.DIR_WAQF_FIRST:
+                first_color, last_color = COLOR_WAQF, COLOR_ISTINAF
+            else:
+                first_color, last_color = COLOR_ISTINAF, COLOR_WAQF
             marks.append(
                 {
                     'verseKey': first['verseKey'],
                     'position': first['position'],
-                    'color': COLOR_ISTINAF,
+                    'color': first_color,
                     'noteId': self.pk,
                 }
             )
@@ -115,7 +130,7 @@ class WordMarkNote(models.Model):
                 {
                     'verseKey': last['verseKey'],
                     'position': last['position'],
-                    'color': COLOR_WAQF,
+                    'color': last_color,
                     'noteId': self.pk,
                 }
             )
@@ -128,8 +143,11 @@ class WordMarkNote(models.Model):
                 'noteId': self.pk,
             }
             if has_w and has_i:
-                # Tək söz — gradient
-                mark['textGradient'] = [COLOR_WAQF, COLOR_GRAD_MID, COLOR_ISTINAF]
+                # Tək söz — gradient (istiqamətə görə)
+                if self.direction == self.DIR_WAQF_FIRST:
+                    mark['textGradient'] = [COLOR_WAQF, COLOR_GRAD_MID, COLOR_ISTINAF]
+                else:
+                    mark['textGradient'] = [COLOR_ISTINAF, COLOR_GRAD_MID, COLOR_WAQF]
             elif has_w:
                 mark['color'] = COLOR_WAQF
             else:
