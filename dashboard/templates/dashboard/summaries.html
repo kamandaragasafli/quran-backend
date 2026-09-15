@@ -6,6 +6,42 @@
 
 {% block extra_css %}
 <style>
+.xu-editor {
+  border: 1px solid rgba(91, 157, 255, 0.28);
+  border-radius: 18px;
+  background:
+    linear-gradient(165deg, rgba(142, 197, 255, 0.14), rgba(255,255,255,0.96) 42%),
+    #fff;
+  box-shadow: 0 10px 28px rgba(58, 122, 217, 0.08);
+  padding: 18px 18px 16px;
+  margin-bottom: 18px;
+}
+.xu-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(91, 157, 255, 0.18);
+}
+.xu-editor-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #2A5FA8;
+  letter-spacing: -0.02em;
+}
+.xu-editor-pill {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(91, 157, 255, 0.14);
+  color: #3A7AD9;
+  border: 1px solid rgba(91, 157, 255, 0.28);
+  white-space: nowrap;
+}
 .xu-form-grid {
   display: grid;
   grid-template-columns: 140px 1fr 120px;
@@ -27,26 +63,59 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--muted);
+  color: #5B7A9A;
 }
 .xu-field select,
 .xu-field input,
 .xu-field textarea {
   width: 100%;
+  box-sizing: border-box;
   appearance: none;
-  border: 1px solid var(--border);
+  border: 1.5px solid rgba(91, 157, 255, 0.28);
   background: #fff;
   border-radius: 12px;
   padding: 11px 12px;
   font: inherit;
   font-weight: 600;
   color: var(--text);
+  transition: border-color .12s, box-shadow .12s, background .12s;
+}
+.xu-field select:focus,
+.xu-field input:focus,
+.xu-field textarea:focus {
+  outline: none;
+  border-color: rgba(91, 157, 255, 0.65);
+  box-shadow: 0 0 0 3px rgba(91, 157, 255, 0.14);
+  background: #FBFDFF;
 }
 .xu-field textarea {
-  min-height: 180px;
+  min-height: 200px;
   font-weight: 500;
-  line-height: 1.55;
+  line-height: 1.6;
   resize: vertical;
+  background: linear-gradient(180deg, #FBFDFF, #fff);
+  border-color: rgba(91, 157, 255, 0.32);
+}
+.xu-text-wrap {
+  border: 1.5px solid rgba(91, 157, 255, 0.22);
+  border-radius: 14px;
+  background: rgba(142, 197, 255, 0.06);
+  padding: 12px;
+  margin-bottom: 14px;
+}
+.xu-text-wrap label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.xu-text-hint {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: auto;
 }
 .xu-actions {
   display: flex;
@@ -67,26 +136,44 @@
   font-size: 14px;
   text-decoration: none;
   display: inline-flex;
+  box-shadow: 0 6px 16px rgba(91, 157, 255, 0.28);
 }
 .xu-btn:hover { filter: brightness(1.05); text-decoration: none; color: #fff; }
 .xu-btn.ghost {
-  background: var(--bg-soft);
+  background: #fff;
   color: var(--muted);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
+  box-shadow: none;
 }
 .xu-btn.danger {
-  background: rgba(196, 92, 74, 0.12);
+  background: rgba(196, 92, 74, 0.1);
   color: #b54538;
-  border: 1px solid rgba(196, 92, 74, 0.25);
+  border: 1.5px solid rgba(196, 92, 74, 0.28);
   padding: 6px 10px;
   font-size: 12px;
+  box-shadow: none;
 }
 .xu-btn.edit {
   background: rgba(91, 157, 255, 0.12);
   color: #3A7AD9;
-  border: 1px solid rgba(91, 157, 255, 0.28);
+  border: 1.5px solid rgba(91, 157, 255, 0.32);
   padding: 6px 10px;
   font-size: 12px;
+  box-shadow: none;
+}
+.xu-list-panel {
+  border: 1px solid rgba(28, 42, 58, 0.1);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 24px var(--shadow);
+  padding: 16px 16px 8px;
+}
+.xu-list-panel > h2 {
+  margin: 0 0 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(28, 42, 58, 0.08);
+  font-size: 16px;
+  color: var(--text);
 }
 .xu-item-actions {
   display: flex;
@@ -96,35 +183,74 @@
 }
 .xu-list-item {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 14px 14px;
+  margin-bottom: 10px;
+  border: 1.5px solid rgba(28, 42, 58, 0.08);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(142, 197, 255, 0.07), rgba(255,255,255,0.95));
+  transition: border-color .12s, box-shadow .12s;
 }
-.xu-list-item:last-child { border-bottom: none; }
+.xu-list-item:hover {
+  border-color: rgba(91, 157, 255, 0.35);
+  box-shadow: 0 6px 18px rgba(58, 122, 217, 0.08);
+}
 .xu-list-item a {
   font-weight: 800;
   color: var(--text);
   text-decoration: none;
 }
 .xu-list-item a:hover { color: #3A7AD9; }
+.xu-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.xu-badge.is-surah {
+  background: rgba(43, 187, 173, 0.14);
+  color: #1F9A8F;
+  border: 1px solid rgba(43, 187, 173, 0.28);
+}
+.xu-badge.is-ayah {
+  background: rgba(91, 157, 255, 0.14);
+  color: #3A7AD9;
+  border: 1px solid rgba(91, 157, 255, 0.28);
+}
 .xu-preview {
-  margin-top: 6px;
-  color: var(--muted);
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(28, 42, 58, 0.08);
+  background: rgba(255,255,255,0.85);
+  color: #4A5D70;
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.5;
   white-space: pre-wrap;
+}
+.xu-meta {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
 }
 .xu-alert {
   margin-bottom: 14px;
-  padding: 10px 12px;
+  padding: 11px 14px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
   background: rgba(62, 207, 142, 0.14);
   color: #1F9A8F;
-  border: 1px solid rgba(43, 187, 173, 0.28);
+  border: 1.5px solid rgba(43, 187, 173, 0.28);
 }
 .xu-alert.err {
   background: rgba(196, 92, 74, 0.12);
@@ -140,8 +266,11 @@
 <div class="xu-alert {% if flash_err %}err{% endif %}">{{ flash }}</div>
 {% endif %}
 
-<div class="panel">
-  <h2>{% if edit %}Redaktə · {{ edit.label }}{% else %}Yeni xülasə{% endif %}</h2>
+<div class="xu-editor">
+  <div class="xu-editor-head">
+    <h2>{% if edit %}Redaktə · {{ edit.label }}{% else %}Yeni xülasə{% endif %}</h2>
+    <span class="xu-editor-pill">{% if edit %}Düzəliş{% else %}Yazı{% endif %}</span>
+  </div>
   <form method="post" action="{% url 'dash-summaries' %}">
     {% csrf_token %}
     <input type="hidden" name="action" value="save" />
@@ -173,8 +302,11 @@
       </div>
     </div>
 
-    <div class="xu-field full" style="margin-bottom:14px">
-      <label for="text">Mətn</label>
+    <div class="xu-text-wrap">
+      <label for="text">
+        Mətn
+        <span class="xu-text-hint">Xülasəni buraya yazın</span>
+      </label>
       <textarea name="text" id="text" required placeholder="Xülasə mətnini yazın…">{{ form.text }}</textarea>
     </div>
 
@@ -187,18 +319,18 @@
   </form>
 </div>
 
-<div class="panel">
+<div class="xu-list-panel">
   <h2>Saxlanılmış · {{ notes|length }}</h2>
   {% if notes %}
   {% for n in notes %}
   <div class="xu-list-item">
     <div>
       <a href="{% url 'dash-summaries' %}?edit={{ n.id }}">{{ n.label }}</a>
-      <span class="badge" style="margin-left:8px">{% if n.scope == 'ayah' %}Ayə{% else %}Surə{% endif %}</span>
+      <span class="xu-badge {% if n.scope == 'ayah' %}is-ayah{% else %}is-surah{% endif %}">
+        {% if n.scope == 'ayah' %}Ayə{% else %}Surə{% endif %}
+      </span>
       <div class="xu-preview">{{ n.text|truncatechars:180 }}</div>
-      <div class="muted" style="font-size:12px;margin-top:4px;font-weight:600">
-        {{ n.updated_at|date:"d.m.Y H:i" }}
-      </div>
+      <div class="xu-meta">{{ n.updated_at|date:"d.m.Y H:i" }}</div>
     </div>
     <div class="xu-item-actions">
       <a class="xu-btn edit" href="{% url 'dash-summaries' %}?edit={{ n.id }}">Düzəliş</a>
