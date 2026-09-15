@@ -396,10 +396,15 @@
   font-weight: 600;
 }
 /* Arabic preview */
+.vp-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
 .vp-arabic-wrap {
-  padding: 0 18px 14px;
-  border-bottom: 1px solid rgba(28,42,58,.06);
-  flex-shrink: 0;
+  padding: 14px 18px 0;
 }
 .vp-arabic {
   display: flex;
@@ -473,9 +478,6 @@
 /* body */
 .vp-body {
   padding: 14px 18px 6px;
-  overflow: auto;
-  flex: 1;
-  min-height: 0;
 }
 /* two colored sections */
 .vp-section {
@@ -788,25 +790,27 @@
       <button type="button" class="vp-close" id="vpClose" aria-label="Bağla">×</button>
     </div>
 
-    <div class="vp-arabic-wrap">
-      <div class="vp-arabic" id="vpArabic" dir="rtl"></div>
-    </div>
-
-    <div class="vp-body">
-      <div class="vp-section is-waqf">
-        <h4>
-          Vəqf
-          <span class="vp-sec-badge">■ Qırmızı</span>
-        </h4>
-        <p class="vp-sec-desc">Bu sözdə oxu dayandırılır (vəqf yeri)</p>
+    <div class="vp-scroll">
+      <div class="vp-arabic-wrap">
+        <div class="vp-arabic" id="vpArabic" dir="rtl"></div>
       </div>
 
-      <div class="vp-section is-istinaf">
-        <h4>
-          İstinaf
-          <span class="vp-sec-badge">◀ Yaşıl</span>
-        </h4>
-        <p class="vp-sec-desc">Bu sözdən sonra oxu yenidən başlatmaq tövsiyə olunur</p>
+      <div class="vp-body">
+        <div class="vp-section is-waqf">
+          <h4>
+            Vəqf
+            <span class="vp-sec-badge">■ Qırmızı</span>
+          </h4>
+          <p class="vp-sec-desc">Bu sözdə oxu dayandırılır (vəqf yeri)</p>
+        </div>
+
+        <div class="vp-section is-istinaf">
+          <h4>
+            İstinaf
+            <span class="vp-sec-badge">◀ Yaşıl</span>
+          </h4>
+          <p class="vp-sec-desc">Bu sözdən sonra oxu yenidən başlatmaq tövsiyə olunur</p>
+        </div>
       </div>
     </div>
 
