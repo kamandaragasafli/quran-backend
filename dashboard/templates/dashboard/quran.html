@@ -412,38 +412,17 @@
   justify-content: center;
   align-items: baseline;
   gap: 4px 10px;
-  padding: 22px 14px 12px;
+  padding: 14px 14px 12px;
   border-radius: 14px;
-  background: #F8FAF9;
-  border: 1px solid rgba(43,187,173,.18);
+  background: #fff;
+  border: 1px solid rgba(28,42,58,.1);
   direction: rtl;
   text-align: center;
   font-family: "Amiri", "Traditional Arabic", "Scheherazade New", serif;
 }
 .vp-word {
-  position: relative;
   display: inline-block;
-  padding-top: 2px;
 }
-.vp-word-ico {
-  position: absolute;
-  left: 50%;
-  bottom: 100%;
-  transform: translateX(-50%);
-  margin-bottom: 2px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px; height: 14px;
-  border-radius: 3px;
-  font-size: 8px;
-  line-height: 1;
-  color: #fff;
-  pointer-events: none;
-}
-.vp-word-ico.is-waqf    { background: #E53935; }
-.vp-word-ico.is-istinaf { background: #43A047; }
-.vp-word-ico.is-both    { background: linear-gradient(90deg,#E53935,#43A047); width:18px; }
 .vp-word-txt {
   font-family: "Amiri", "Traditional Arabic", "Scheherazade New", serif;
   font-size: 26px;
@@ -507,16 +486,6 @@
 }
 .vp-section.is-waqf    h4 { color: #C62828; }
 .vp-section.is-istinaf h4 { color: #2E7D32; }
-.vp-sec-badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 20px;
-  color: #fff;
-  letter-spacing: .02em;
-}
-.is-waqf    .vp-sec-badge { background: #E53935; }
-.is-istinaf .vp-sec-badge { background: #43A047; }
 .vp-sec-desc {
   font-size: 11px;
   font-weight: 600;
@@ -562,18 +531,20 @@
   font-size: 11px;
   font-weight: 700;
 }
-.vp-dir-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 7px;
-  border-radius: 6px;
-  color: #fff;
-  font-size: 10px;
+.vp-dir-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
-.vp-dir-chip.is-waqf { background: #E53935; }
-.vp-dir-chip.is-istinaf { background: #43A047; }
-.vp-dir-arrow { color: var(--muted); font-size: 12px; }
+.vp-dir-dot.is-waqf { background: #E53935; }
+.vp-dir-dot.is-istinaf { background: #43A047; }
+.vp-dir-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.vp-dir-arrow { color: var(--muted); font-size: 11px; margin: 0 2px; }
 /* actions */
 .vp-actions {
   display: flex;
@@ -851,34 +822,32 @@
           <button type="button" class="vp-dir-btn is-on" id="vpDirIstinafFirst" data-dir="istinaf_first">
             <span class="vp-dir-title">İstinaf → Vəqf</span>
             <span class="vp-dir-flow">
-              <span class="vp-dir-chip is-istinaf">◀ Yaşıl</span>
+              <span class="vp-dir-dot is-istinaf" aria-hidden="true"></span>
+              <span class="vp-dir-label">Yaşıl</span>
               <span class="vp-dir-arrow">→</span>
-              <span class="vp-dir-chip is-waqf">■ Qırmızı</span>
+              <span class="vp-dir-dot is-waqf" aria-hidden="true"></span>
+              <span class="vp-dir-label">Qırmızı</span>
             </span>
           </button>
           <button type="button" class="vp-dir-btn" id="vpDirWaqfFirst" data-dir="waqf_first">
             <span class="vp-dir-title">Vəqf → İstinaf</span>
             <span class="vp-dir-flow">
-              <span class="vp-dir-chip is-waqf">■ Qırmızı</span>
+              <span class="vp-dir-dot is-waqf" aria-hidden="true"></span>
+              <span class="vp-dir-label">Qırmızı</span>
               <span class="vp-dir-arrow">→</span>
-              <span class="vp-dir-chip is-istinaf">◀ Yaşıl</span>
+              <span class="vp-dir-dot is-istinaf" aria-hidden="true"></span>
+              <span class="vp-dir-label">Yaşıl</span>
             </span>
           </button>
         </div>
 
         <div class="vp-section is-waqf">
-          <h4>
-            Vəqf
-            <span class="vp-sec-badge">■ Qırmızı</span>
-          </h4>
+          <h4>Vəqf · qırmızı</h4>
           <p class="vp-sec-desc">Bu sözdə oxu dayandırılır (vəqf yeri)</p>
         </div>
 
         <div class="vp-section is-istinaf">
-          <h4>
-            İstinaf
-            <span class="vp-sec-badge">◀ Yaşıl</span>
-          </h4>
+          <h4>İstinaf · yaşıl</h4>
           <p class="vp-sec-desc">Bu sözdən sonra oxu yenidən başlatmaq tövsiyə olunur</p>
         </div>
       </div>
@@ -1150,28 +1119,16 @@
     var reverse = markDirection === 'waqf_first';
     words.forEach(function (w, i) {
       var role = 'mid';
-      var ico = '';
       if (n === 1) {
         role = 'both';
-        ico = '◆';
       } else if (i === 0) {
         role = reverse ? 'waqf' : 'istinaf';
-        ico = reverse ? '■' : '◀';
       } else if (i === n - 1) {
         role = reverse ? 'istinaf' : 'waqf';
-        ico = reverse ? '◀' : '■';
       }
 
       var wrap = document.createElement('span');
       wrap.className = 'vp-word is-' + role;
-
-      if (ico) {
-        var iconEl = document.createElement('span');
-        iconEl.className = 'vp-word-ico is-' + role;
-        iconEl.setAttribute('aria-hidden', 'true');
-        iconEl.textContent = ico;
-        wrap.appendChild(iconEl);
-      }
 
       var txt = document.createElement('span');
       txt.className = 'vp-word-txt';
