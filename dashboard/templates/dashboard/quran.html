@@ -347,234 +347,207 @@
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: rgba(28, 42, 58, 0.42);
-  backdrop-filter: blur(5px);
-  align-items: center;
+  background: rgba(28, 42, 58, 0.45);
+  backdrop-filter: blur(6px);
+  align-items: flex-end;
   justify-content: center;
-  padding: 20px;
+  padding: 0;
 }
 .vp-backdrop.open { display: flex; }
 .vp-modal {
-  width: min(100%, 560px);
-  max-height: min(88vh, 560px);
+  width: min(100%, 540px);
+  max-height: 92vh;
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-radius: 20px;
+  border-radius: 22px 22px 0 0;
   border: 1px solid rgba(28, 42, 58, 0.08);
-  box-shadow: 0 20px 48px rgba(28, 42, 58, 0.22);
+  box-shadow: 0 -8px 40px rgba(28, 42, 58, 0.18);
   overflow: hidden;
-  animation: vpIn .16s ease;
+  animation: vpIn .2s cubic-bezier(0.32,0.72,0,1);
 }
 @keyframes vpIn {
-  from { opacity: 0; transform: translateY(8px) scale(0.985); }
-  to { opacity: 1; transform: none; }
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+/* drag handle */
+.vp-handle {
+  width: 36px; height: 4px;
+  background: rgba(28,42,58,.18);
+  border-radius: 2px;
+  margin: 10px auto 0;
+  flex-shrink: 0;
 }
 .vp-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 16px 18px 14px;
+  padding: 12px 18px 14px;
   border-bottom: 1px solid rgba(28, 42, 58, 0.07);
   flex-shrink: 0;
 }
 .vp-head-main { min-width: 0; flex: 1; }
 .vp-head h3 {
-  margin: 0;
-  font-size: 17px;
+  margin: 0 0 2px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--text);
 }
 .vp-head .vp-sub {
-  margin: 3px 0 0;
+  margin: 0;
   font-size: 12px;
   color: var(--muted);
   font-weight: 600;
 }
+/* Arabic preview */
+.vp-arabic-wrap {
+  padding: 0 18px 14px;
+  border-bottom: 1px solid rgba(28,42,58,.06);
+  flex-shrink: 0;
+}
 .vp-arabic {
-  margin-top: 10px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: flex-start;
-  gap: 10px 14px;
-  max-width: 100%;
+  align-items: center;
+  gap: 8px 12px;
   padding: 12px 14px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(126, 214, 194, 0.18), rgba(43, 187, 173, 0.12));
-  border: 1px solid rgba(43, 187, 173, 0.22);
+  border-radius: 14px;
+  background: #F8FAF9;
+  border: 1px solid rgba(43,187,173,.18);
   direction: rtl;
-  line-height: 1.35;
   text-align: center;
 }
 .vp-word {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  max-width: 100%;
+  gap: 3px;
 }
 .vp-word-ico {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  font-size: 10px;
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  font-size: 9px;
   line-height: 1;
   color: #fff;
 }
-.vp-word-ico.is-waqf { background: #E53935; }
+.vp-word-ico.is-waqf    { background: #E53935; }
 .vp-word-ico.is-istinaf { background: #43A047; }
-.vp-word-ico.is-both {
-  background: linear-gradient(90deg, #E53935 0%, #43A047 100%);
-  width: 22px;
-}
-.vp-word-txt {
-  font-size: 24px;
-  font-weight: 600;
-  color: #1A2430;
-}
-.vp-word.is-waqf .vp-word-txt { color: #E53935; }
+.vp-word-ico.is-both    { background: linear-gradient(90deg,#E53935,#43A047); width:20px; }
+.vp-word-txt { font-size: 22px; font-weight: 600; color: #1A2430; }
+.vp-word.is-waqf    .vp-word-txt { color: #E53935; }
 .vp-word.is-istinaf .vp-word-txt { color: #43A047; }
-.vp-word.is-both .vp-word-txt {
-  background: linear-gradient(90deg, #E53935 0%, #1A2430 48%, #43A047 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
+.vp-word.is-both    .vp-word-txt {
+  background: linear-gradient(90deg,#E53935 0%,#1A2430 48%,#43A047 100%);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
 }
-.vp-word.is-mid .vp-word-txt { color: #1A2430; opacity: 0.72; }
-.vp-legend {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.vp-leg-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  direction: ltr;
-  text-align: left;
-}
-.vp-leg-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.vp-leg-dot.is-waqf { background: #E53935; }
-.vp-leg-dot.is-istinaf { background: #43A047; }
-.vp-leg-ico {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  font-size: 9px;
-  color: #fff;
-  flex-shrink: 0;
-}
-.vp-leg-ico.is-waqf { background: #E53935; }
-.vp-leg-ico.is-istinaf { background: #43A047; }
-.vp-leg-em { color: var(--text); font-weight: 700; }
+.vp-word.is-mid .vp-word-txt { opacity: .65; }
 .vp-close {
   appearance: none;
-  border: 1px solid var(--border);
-  background: #fff;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  border: none;
+  background: rgba(28,42,58,.07);
+  width: 30px; height: 30px;
+  border-radius: 50%;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
   font-weight: 700;
   color: var(--muted);
   flex-shrink: 0;
-  align-self: flex-start;
+  display: flex; align-items: center; justify-content: center;
 }
-.vp-close:hover { color: var(--text); background: var(--bg-soft); }
+.vp-close:hover { background: rgba(28,42,58,.13); color: var(--text); }
+/* body */
 .vp-body {
-  padding: 14px 18px;
+  padding: 14px 18px 6px;
   overflow: auto;
   flex: 1;
   min-height: 0;
 }
-.vp-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
+/* two colored sections */
 .vp-section {
-  border: 1px solid rgba(28, 42, 58, 0.08);
   border-radius: 14px;
-  padding: 12px 12px 10px;
-  background: #fff;
+  padding: 12px 14px 12px 16px;
+  margin-bottom: 10px;
+  border: 1px solid transparent;
+  border-left-width: 3px;
+}
+.vp-section.is-waqf {
+  background: rgba(229,57,53,.04);
+  border-color: rgba(229,57,53,.15);
+  border-left-color: #E53935;
+}
+.vp-section.is-istinaf {
+  background: rgba(67,160,71,.04);
+  border-color: rgba(67,160,71,.15);
+  border-left-color: #43A047;
 }
 .vp-section h4 {
-  margin: 0 0 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(28, 42, 58, 0.06);
+  margin: 0 0 4px;
   font-size: 13px;
-  letter-spacing: -0.01em;
-  color: var(--teal-deep, #1F9A8F);
   font-weight: 800;
-}
-.vp-field {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-bottom: 10px;
+  align-items: center;
+  gap: 7px;
 }
-.vp-field:last-child { margin-bottom: 0; }
-.vp-field label {
-  font-size: 12px;
+.vp-section.is-waqf    h4 { color: #C62828; }
+.vp-section.is-istinaf h4 { color: #2E7D32; }
+.vp-sec-badge {
+  font-size: 10px;
   font-weight: 700;
-  color: var(--muted);
+  padding: 2px 7px;
+  border-radius: 20px;
+  color: #fff;
+  letter-spacing: .02em;
 }
-.vp-field select,
-.vp-field textarea,
-.vp-field input {
+.is-waqf    .vp-sec-badge { background: #E53935; }
+.is-istinaf .vp-sec-badge { background: #43A047; }
+.vp-sec-desc {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.vp-field textarea {
   width: 100%;
+  box-sizing: border-box;
   appearance: none;
   border: 1px solid var(--border);
-  background: var(--bg-soft);
+  background: #fff;
   border-radius: 10px;
   padding: 9px 11px;
   font: inherit;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 13px;
   color: var(--text);
-  resize: vertical;
-  transition: border-color .12s, background .12s;
+  resize: none;
+  min-height: 52px;
+  max-height: 100px;
+  line-height: 1.5;
+  transition: border-color .12s, box-shadow .12s;
 }
-.vp-field select:focus,
-.vp-field textarea:focus,
-.vp-field input:focus {
+.vp-section.is-waqf .vp-field textarea:focus {
   outline: none;
-  border-color: rgba(43, 187, 173, 0.55);
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(43, 187, 173, 0.12);
+  border-color: rgba(229,57,53,.4);
+  box-shadow: 0 0 0 3px rgba(229,57,53,.08);
 }
-.vp-field textarea {
-  min-height: 56px;
-  max-height: 120px;
-  font-weight: 500;
-  line-height: 1.45;
+.vp-section.is-istinaf .vp-field textarea:focus {
+  outline: none;
+  border-color: rgba(67,160,71,.4);
+  box-shadow: 0 0 0 3px rgba(67,160,71,.08);
 }
+/* actions */
 .vp-actions {
   display: flex;
   gap: 8px;
-  justify-content: flex-end;
-  padding: 12px 18px 14px;
+  align-items: center;
+  padding: 12px 18px 18px;
   border-top: 1px solid rgba(28, 42, 58, 0.07);
   background: #fff;
   flex-shrink: 0;
@@ -583,39 +556,41 @@
   appearance: none;
   border: none;
   cursor: pointer;
-  padding: 10px 16px;
-  border-radius: 11px;
+  padding: 11px 18px;
+  border-radius: 12px;
   font-weight: 700;
   font-size: 13px;
 }
-.vp-btn-cancel {
-  background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--border) !important;
-}
-.vp-btn-cancel:hover { background: var(--bg-soft); color: var(--text); }
 .vp-btn-delete {
-  background: #fff;
+  background: rgba(198,40,40,.08);
   color: #C62828;
-  border: 1px solid rgba(198, 40, 40, 0.35) !important;
   margin-right: auto;
+  padding: 11px 14px !important;
+  font-size: 12px !important;
 }
-.vp-btn-delete:hover { background: rgba(198, 40, 40, 0.08); }
+.vp-btn-delete:hover { background: rgba(198,40,40,.15); }
+.vp-btn-cancel {
+  background: rgba(28,42,58,.06);
+  color: var(--muted);
+}
+.vp-btn-cancel:hover { background: rgba(28,42,58,.1); color: var(--text); }
 .vp-btn-save {
+  flex: 1;
   background: linear-gradient(135deg, #7ED6C2, #2BBBAD);
   color: #fff;
-  box-shadow: 0 6px 16px rgba(43, 187, 173, 0.28);
+  box-shadow: 0 4px 14px rgba(43,187,173,.3);
 }
 .vp-btn-save:hover { filter: brightness(1.04); }
-.vp-sel-bubble .vp-sel-delete {
-  background: #C62828;
-}
+.vp-sel-bubble .vp-sel-delete { background: #C62828; }
 .vp-sel-bubble .vp-sel-delete:hover { background: #B71C1C; }
-@media (max-width: 540px) {
-  .vp-grid { grid-template-columns: 1fr; }
-  .vp-modal { max-height: 92vh; border-radius: 16px; }
-  .vp-actions { flex-direction: column-reverse; }
-  .vp-actions button { width: 100%; }
+@media (min-width: 541px) {
+  .vp-backdrop { align-items: center; padding: 20px; }
+  .vp-modal { border-radius: 20px; max-height: 88vh; animation: vpInCenter .16s ease; }
+  @keyframes vpInCenter {
+    from { opacity:0; transform: translateY(6px) scale(.98); }
+    to   { opacity:1; transform: none; }
+  }
+  .vp-handle { display: none; }
 }
 .mushaf-footer {
   margin-top: 14px;
@@ -834,50 +809,48 @@
 {# Vəqf / İstinaf popup #}
 <div class="vp-backdrop" id="vpBackdrop" aria-hidden="true">
   <div class="vp-modal" role="dialog" aria-modal="true" aria-labelledby="vpTitle" id="vpModal">
+
+    <div class="vp-handle"></div>
+
     <div class="vp-head">
       <div class="vp-head-main">
-        <h3 id="vpTitle">Vəqf / İstinaf</h3>
+        <h3 id="vpTitle">Vəqf / İstinaf qeydi</h3>
         <p class="vp-sub" id="vpMeta">—</p>
-        <div class="vp-arabic" id="vpArabic" dir="rtl"></div>
-        <div class="vp-legend" id="vpLegend">
-          <div class="vp-leg-item">
-            <span class="vp-leg-ico is-waqf" aria-hidden="true">■</span>
-            <span class="vp-leg-dot is-waqf" aria-hidden="true"></span>
-            <span><span class="vp-leg-em">Qırmızı</span> — vəqfi bildirir</span>
-          </div>
-          <div class="vp-leg-item">
-            <span class="vp-leg-ico is-istinaf" aria-hidden="true">◀</span>
-            <span class="vp-leg-dot is-istinaf" aria-hidden="true"></span>
-            <span><span class="vp-leg-em">Yaşıl</span> — istināfı bildirir</span>
-          </div>
-        </div>
       </div>
       <button type="button" class="vp-close" id="vpClose" aria-label="Bağla">×</button>
     </div>
 
-    <div class="vp-body">
-      <div class="vp-grid">
-        <div class="vp-section">
-          <h4>Vəqf</h4>
-          <div class="vp-field">
-            <label for="vpWaqfNote">Qeyd <span style="font-weight:500;opacity:.7">(istəyə bağlı)</span></label>
-            <textarea id="vpWaqfNote" placeholder="Vəqf izahı…" rows="3"></textarea>
-          </div>
-        </div>
+    <div class="vp-arabic-wrap">
+      <div class="vp-arabic" id="vpArabic" dir="rtl"></div>
+    </div>
 
-        <div class="vp-section">
-          <h4>İstinaf</h4>
-          <div class="vp-field">
-            <label for="vpIstinafNote">Qeyd <span style="font-weight:500;opacity:.7">(istəyə bağlı)</span></label>
-            <textarea id="vpIstinafNote" placeholder="İstinaf izahı…" rows="3"></textarea>
-          </div>
+    <div class="vp-body">
+      <div class="vp-section is-waqf">
+        <h4>
+          Vəqf
+          <span class="vp-sec-badge">■ Qırmızı</span>
+        </h4>
+        <p class="vp-sec-desc">Bu sözdə oxu dayandırılır (vəqf yeri)</p>
+        <div class="vp-field">
+          <textarea id="vpWaqfNote" placeholder="Əlavə qeyd… (istəyə bağlı)" rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="vp-section is-istinaf">
+        <h4>
+          İstinaf
+          <span class="vp-sec-badge">◀ Yaşıl</span>
+        </h4>
+        <p class="vp-sec-desc">Bu sözdən sonra oxu yenidən başlatmaq tövsiyə olunur</p>
+        <div class="vp-field">
+          <textarea id="vpIstinafNote" placeholder="Əlavə qeyd… (istəyə bağlı)" rows="2"></textarea>
         </div>
       </div>
     </div>
 
     <div class="vp-actions">
+      <button type="button" class="vp-btn-delete" id="vpDelete" hidden>🗑 Sil</button>
       <button type="button" class="vp-btn-cancel" id="vpCancel">Bağla</button>
-      <button type="button" class="vp-btn-delete" id="vpDelete" hidden>Sil</button>
       <button type="button" class="vp-btn-save" id="vpSave">Yadda saxla</button>
     </div>
   </div>
