@@ -831,9 +831,6 @@
           <span class="vp-sec-badge">■ Qırmızı</span>
         </h4>
         <p class="vp-sec-desc">Bu sözdə oxu dayandırılır (vəqf yeri)</p>
-        <div class="vp-field">
-          <textarea id="vpWaqfNote" placeholder="Əlavə qeyd… (istəyə bağlı)" rows="2"></textarea>
-        </div>
       </div>
 
       <div class="vp-section is-istinaf">
@@ -842,9 +839,6 @@
           <span class="vp-sec-badge">◀ Yaşıl</span>
         </h4>
         <p class="vp-sec-desc">Bu sözdən sonra oxu yenidən başlatmaq tövsiyə olunur</p>
-        <div class="vp-field">
-          <textarea id="vpIstinafNote" placeholder="Əlavə qeyd… (istəyə bağlı)" rows="2"></textarea>
-        </div>
       </div>
     </div>
 
@@ -875,8 +869,6 @@
   var page = document.querySelector('.mushaf-page');
   var meta = document.getElementById('vpMeta');
   var arabic = document.getElementById('vpArabic');
-  var waqfNote = document.getElementById('vpWaqfNote');
-  var istinafNote = document.getElementById('vpIstinafNote');
   var bubble = document.getElementById('vpSelBubble');
   var saveBtn = document.getElementById('vpSave');
   var deleteBtn = document.getElementById('vpDelete');
@@ -1145,8 +1137,6 @@
     activeNoteId = noteIdForPicked();
     meta.textContent = lastInfo.meta;
     renderMarkedArabic(lastInfo);
-    waqfNote.value = '';
-    istinafNote.value = '';
     syncDeleteButtons();
     hideBubble();
     backdrop.classList.add('open');
@@ -1198,8 +1188,6 @@
       alert('Söz seçin');
       return;
     }
-    var waqf = (waqfNote.value || '').trim();
-    var istinaf = (istinafNote.value || '').trim();
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saxlanılır…';
     fetch('/api/word-marks/', {
@@ -1210,8 +1198,8 @@
       },
       body: JSON.stringify({
         words: lastInfo.words,
-        waqf_note: waqf,
-        istinaf_note: istinaf,
+        waqf_note: '',
+        istinaf_note: '',
       }),
     })
       .then(function (r) {
