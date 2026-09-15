@@ -349,41 +349,34 @@
   z-index: 80;
   background: rgba(28, 42, 58, 0.45);
   backdrop-filter: blur(6px);
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: 20px;
 }
 .vp-backdrop.open { display: flex; }
 .vp-modal {
   width: min(100%, 540px);
-  max-height: 92vh;
+  max-height: 88vh;
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-radius: 22px 22px 0 0;
+  border-radius: 20px;
   border: 1px solid rgba(28, 42, 58, 0.08);
-  box-shadow: 0 -8px 40px rgba(28, 42, 58, 0.18);
+  box-shadow: 0 20px 48px rgba(28, 42, 58, 0.22);
   overflow: hidden;
-  animation: vpIn .2s cubic-bezier(0.32,0.72,0,1);
+  animation: vpIn .16s ease;
 }
 @keyframes vpIn {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
 }
-/* drag handle */
-.vp-handle {
-  width: 36px; height: 4px;
-  background: rgba(28,42,58,.18);
-  border-radius: 2px;
-  margin: 10px auto 0;
-  flex-shrink: 0;
-}
+.vp-handle { display: none; }
 .vp-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 18px 14px;
+  padding: 16px 18px 14px;
   border-bottom: 1px solid rgba(28, 42, 58, 0.07);
   flex-shrink: 0;
 }
@@ -512,42 +505,14 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--muted);
-  margin: 0 0 10px;
-}
-.vp-field textarea {
-  width: 100%;
-  box-sizing: border-box;
-  appearance: none;
-  border: 1px solid var(--border);
-  background: #fff;
-  border-radius: 10px;
-  padding: 9px 11px;
-  font: inherit;
-  font-weight: 500;
-  font-size: 13px;
-  color: var(--text);
-  resize: none;
-  min-height: 52px;
-  max-height: 100px;
-  line-height: 1.5;
-  transition: border-color .12s, box-shadow .12s;
-}
-.vp-section.is-waqf .vp-field textarea:focus {
-  outline: none;
-  border-color: rgba(229,57,53,.4);
-  box-shadow: 0 0 0 3px rgba(229,57,53,.08);
-}
-.vp-section.is-istinaf .vp-field textarea:focus {
-  outline: none;
-  border-color: rgba(67,160,71,.4);
-  box-shadow: 0 0 0 3px rgba(67,160,71,.08);
+  margin: 0;
 }
 /* actions */
 .vp-actions {
   display: flex;
   gap: 8px;
   align-items: center;
-  padding: 12px 18px 18px;
+  padding: 12px 18px 16px;
   border-top: 1px solid rgba(28, 42, 58, 0.07);
   background: #fff;
   flex-shrink: 0;
@@ -583,15 +548,6 @@
 .vp-btn-save:hover { filter: brightness(1.04); }
 .vp-sel-bubble .vp-sel-delete { background: #C62828; }
 .vp-sel-bubble .vp-sel-delete:hover { background: #B71C1C; }
-@media (min-width: 541px) {
-  .vp-backdrop { align-items: center; padding: 20px; }
-  .vp-modal { border-radius: 20px; max-height: 88vh; animation: vpInCenter .16s ease; }
-  @keyframes vpInCenter {
-    from { opacity:0; transform: translateY(6px) scale(.98); }
-    to   { opacity:1; transform: none; }
-  }
-  .vp-handle { display: none; }
-}
 .mushaf-footer {
   margin-top: 14px;
   padding-top: 10px;
@@ -809,8 +765,6 @@
 {# Vəqf / İstinaf popup #}
 <div class="vp-backdrop" id="vpBackdrop" aria-hidden="true">
   <div class="vp-modal" role="dialog" aria-modal="true" aria-labelledby="vpTitle" id="vpModal">
-
-    <div class="vp-handle"></div>
 
     <div class="vp-head">
       <div class="vp-head-main">
