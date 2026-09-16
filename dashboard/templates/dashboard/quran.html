@@ -291,6 +291,7 @@
 }
 .mushaf-glyph.is-ink-waqf { color: #E53935 !important; }
 .mushaf-glyph.is-ink-istinaf { color: #43A047 !important; }
+.mushaf-glyph.is-ink-qiraat { color: #1E88E5 !important; }
 .mushaf-glyph.is-ink-grad {
   background: linear-gradient(90deg, #E53935 0%, #1A2430 48%, #43A047 100%);
   -webkit-background-clip: text;
@@ -317,7 +318,7 @@
   box-shadow: 0 10px 24px rgba(28, 42, 58, 0.28);
   animation: vpIn .12s ease;
 }
-.vp-sel-bubble.open { display: flex; gap: 2px; align-items: center; }
+.vp-sel-bubble.open { display: flex; gap: 2px; align-items: center; flex-wrap: wrap; max-width: min(92vw, 420px); }
 .vp-sel-bubble button {
   appearance: none;
   border: none;
@@ -335,6 +336,10 @@
   background: #2BBBAD;
 }
 .vp-sel-bubble .vp-sel-open:hover { background: #25a89b; }
+.vp-sel-bubble .vp-sel-qiraat {
+  background: #1E88E5;
+}
+.vp-sel-bubble .vp-sel-qiraat:hover { background: #1976D2; }
 .vp-sel-bubble .vp-sel-meta {
   display: none;
 }
@@ -476,6 +481,11 @@
   border-color: rgba(67,160,71,.15);
   border-left-color: #43A047;
 }
+.vp-section.is-qiraat {
+  background: rgba(30,136,229,.05);
+  border-color: rgba(30,136,229,.18);
+  border-left-color: #1E88E5;
+}
 .vp-section h4 {
   margin: 0 0 4px;
   font-size: 13px;
@@ -486,11 +496,47 @@
 }
 .vp-section.is-waqf    h4 { color: #C62828; }
 .vp-section.is-istinaf h4 { color: #2E7D32; }
+.vp-section.is-qiraat  h4 { color: #1565C0; }
 .vp-sec-desc {
   font-size: 11px;
   font-weight: 600;
   color: var(--muted);
   margin: 0;
+}
+.vp-note-area {
+  width: 100%;
+  min-height: 110px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(30,136,229,.28);
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+  resize: vertical;
+  box-sizing: border-box;
+}
+.vp-note-area:focus {
+  outline: none;
+  border-color: #1E88E5;
+  box-shadow: 0 0 0 3px rgba(30,136,229,.15);
+}
+.vp-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.vp-word.is-qiraat .vp-word-txt {
+  color: #1E88E5;
+  font-weight: 700;
+}
+.vp-word.is-qiraat-mid .vp-word-txt {
+  color: #1A2430;
+  opacity: .72;
 }
 /* istiqamət seçimi */
 .vp-dir {
@@ -861,11 +907,50 @@
   </div>
 </div>
 
+{# Qiraət Qeydi popup #}
+<div class="vp-backdrop" id="qqBackdrop" aria-hidden="true">
+  <div class="vp-modal" role="dialog" aria-modal="true" aria-labelledby="qqTitle" id="qqModal">
+    <div class="vp-head">
+      <div class="vp-head-main">
+        <h3 id="qqTitle">Qiraət Qeydi</h3>
+        <p class="vp-sub" id="qqMeta">—</p>
+      </div>
+      <button type="button" class="vp-close" id="qqClose" aria-label="Bağla">×</button>
+    </div>
+
+    <div class="vp-scroll">
+      <div class="vp-arabic-wrap">
+        <div class="vp-arabic" id="qqArabic" dir="rtl"></div>
+      </div>
+      <div class="vp-body">
+        <div class="vp-section is-qiraat">
+          <h4>Mavi vurğu</h4>
+          <p class="vp-sec-desc" id="qqRuleHint">Yalnız ilk və son söz mavi</p>
+          <textarea
+            class="vp-note-area"
+            id="qqNote"
+            placeholder="Qiraət haqqında qeydinizi yazın…"
+            rows="4"
+          ></textarea>
+          <p class="vp-hint">Qeyd istəyə bağlıdır; saxladıqdan sonra məshəfdə mavi görünəcək.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="vp-actions">
+      <button type="button" class="vp-btn-delete" id="qqDelete" hidden>🗑 Sil</button>
+      <button type="button" class="vp-btn-cancel" id="qqCancel">Bağla</button>
+      <button type="button" class="vp-btn-save" id="qqSave" style="background:#1E88E5;">Yadda saxla</button>
+    </div>
+  </div>
+</div>
+
 {# Söz seçimi paneli #}
 <div class="vp-sel-bubble" id="vpSelBubble" aria-hidden="true">
   <div class="vp-sel-ar" id="vpSelAr" dir="rtl"></div>
   <div class="vp-sel-meta" id="vpSelMeta"></div>
   <button type="button" class="vp-sel-open" id="vpSelOpen">Vəqf / İstinaf</button>
+  <button type="button" class="vp-sel-qiraat" id="qqSelOpen">Qiraət Qeydi</button>
   <button type="button" class="vp-sel-delete" id="vpSelDelete" hidden>Sil</button>
 </div>
 {% endif %}
@@ -883,6 +968,13 @@
   var saveBtn = document.getElementById('vpSave');
   var deleteBtn = document.getElementById('vpDelete');
   var selDeleteBtn = document.getElementById('vpSelDelete');
+  var qqBackdrop = document.getElementById('qqBackdrop');
+  var qqMeta = document.getElementById('qqMeta');
+  var qqArabic = document.getElementById('qqArabic');
+  var qqNote = document.getElementById('qqNote');
+  var qqSaveBtn = document.getElementById('qqSave');
+  var qqDeleteBtn = document.getElementById('qqDelete');
+  var qqRuleHint = document.getElementById('qqRuleHint');
   var wordGlyphs = Array.prototype.slice.call(
     document.querySelectorAll('.mushaf-glyph.is-tap[data-type="word"]')
   );
@@ -965,6 +1057,11 @@
       deleteBtn.disabled = false;
       deleteBtn.textContent = 'Sil';
     }
+    if (qqDeleteBtn) {
+      qqDeleteBtn.hidden = !show;
+      qqDeleteBtn.disabled = false;
+      qqDeleteBtn.textContent = 'Sil';
+    }
     if (selDeleteBtn) selDeleteBtn.hidden = !show;
   }
 
@@ -1002,9 +1099,19 @@
     else if (verses.length > 1) verseLabel = verses[0] + ' – ' + verses[verses.length - 1];
     return {
       words: words,
+      verses: verses,
       phrase: phrase,
       meta: verseLabel + (words.length > 1 ? ' · ' + words.length + ' söz' : ' · söz'),
     };
+  }
+
+  function validateQiraat(info) {
+    if (!info || !info.words || !info.words.length) return 'Söz seçin';
+    var ayahN = (info.verses || []).length;
+    var n = info.words.length;
+    if (ayahN <= 3) return null;
+    if (n >= 3 && n <= 6) return null;
+    return '1–3 ayə seçin, və ya 3-dən çox ayədə 3–6 söz (ilk və son mavi).';
   }
 
   function placeBubbleNearPicked() {
@@ -1065,7 +1172,7 @@
 
   function paintInk() {
     allTapGlyphs.forEach(function (g) {
-      g.classList.remove('is-ink-waqf', 'is-ink-istinaf', 'is-ink-grad');
+      g.classList.remove('is-ink-waqf', 'is-ink-istinaf', 'is-ink-qiraat', 'is-ink-grad');
       g.style.removeProperty('color');
       g.style.removeProperty('-webkit-text-fill-color');
       g.style.removeProperty('background');
@@ -1081,6 +1188,8 @@
         g.classList.add('is-ink-waqf');
       } else if (mark.color === '#43A047') {
         g.classList.add('is-ink-istinaf');
+      } else if (mark.color === '#1E88E5') {
+        g.classList.add('is-ink-qiraat');
       } else if (mark.color) {
         g.style.color = mark.color;
       }
@@ -1147,6 +1256,7 @@
     setDirection('istinaf_first');
     syncDeleteButtons();
     hideBubble();
+    closeQiraatModal();
     backdrop.classList.add('open');
     backdrop.setAttribute('aria-hidden', 'false');
   }
@@ -1156,14 +1266,65 @@
     backdrop.setAttribute('aria-hidden', 'true');
   }
 
+  function renderQiraatArabic(info) {
+    if (!qqArabic) return;
+    qqArabic.innerHTML = '';
+    if (!info || !info.words || !info.words.length) {
+      qqArabic.textContent = '—';
+      return;
+    }
+    var n = info.words.length;
+    info.words.forEach(function (w, i) {
+      var wrap = document.createElement('span');
+      var on = n === 1 || i === 0 || i === n - 1;
+      wrap.className = 'vp-word ' + (on ? 'is-qiraat' : 'is-qiraat-mid');
+      var txt = document.createElement('span');
+      txt.className = 'vp-word-txt';
+      txt.textContent = w.text || '';
+      wrap.appendChild(txt);
+      qqArabic.appendChild(wrap);
+    });
+    if (qqRuleHint) {
+      var ayahN = (info.verses || []).length;
+      qqRuleHint.textContent = ayahN + ' ayə · ' + n + ' söz · yalnız ilk və son mavi';
+    }
+  }
+
+  function openQiraatModal() {
+    if (!lastInfo) lastInfo = infoFromGlyphs(picked);
+    if (!lastInfo) return;
+    var err = validateQiraat(lastInfo);
+    if (err) {
+      alert(err);
+      return;
+    }
+    activeNoteId = noteIdForPicked();
+    if (qqMeta) qqMeta.textContent = lastInfo.meta;
+    if (qqNote) qqNote.value = '';
+    renderQiraatArabic(lastInfo);
+    syncDeleteButtons();
+    hideBubble();
+    closeModal();
+    if (!qqBackdrop) return;
+    qqBackdrop.classList.add('open');
+    qqBackdrop.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeQiraatModal() {
+    if (!qqBackdrop) return;
+    qqBackdrop.classList.remove('open');
+    qqBackdrop.setAttribute('aria-hidden', 'true');
+  }
+
   function deleteAnnotation() {
     if (activeNoteId == null) return;
     if (!confirm('Bu işarəni silmək istəyirsiniz?')) return;
     var id = activeNoteId;
-    if (deleteBtn) {
-      deleteBtn.disabled = true;
-      deleteBtn.textContent = 'Silinir…';
-    }
+    var btns = [deleteBtn, qqDeleteBtn].filter(Boolean);
+    btns.forEach(function (b) {
+      b.disabled = true;
+      b.textContent = 'Silinir…';
+    });
     fetch('/api/word-marks/' + id + '/', {
       method: 'DELETE',
       headers: { Accept: 'application/json' },
@@ -1177,16 +1338,17 @@
       .then(function (data) {
         applyPack(data);
         closeModal();
+        closeQiraatModal();
         clearSelection();
       })
       .catch(function (err) {
         alert(err.message || 'Silinmədi');
       })
       .finally(function () {
-        if (deleteBtn) {
-          deleteBtn.disabled = false;
-          deleteBtn.textContent = 'Sil';
-        }
+        btns.forEach(function (b) {
+          b.disabled = false;
+          b.textContent = 'Sil';
+        });
         syncDeleteButtons();
       });
   }
@@ -1206,6 +1368,7 @@
       },
       body: JSON.stringify({
         words: lastInfo.words,
+        kind: 'waqf_istinaf',
         direction: markDirection,
         waqf_note: '',
         istinaf_note: '',
@@ -1231,9 +1394,55 @@
       });
   }
 
+  function saveQiraatAnnotation() {
+    if (!lastInfo || !lastInfo.words || !lastInfo.words.length) {
+      alert('Söz seçin');
+      return;
+    }
+    var err = validateQiraat(lastInfo);
+    if (err) {
+      alert(err);
+      return;
+    }
+    if (!qqSaveBtn) return;
+    qqSaveBtn.disabled = true;
+    qqSaveBtn.textContent = 'Saxlanılır…';
+    fetch('/api/word-marks/', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        words: lastInfo.words,
+        kind: 'qiraat',
+        note: qqNote ? qqNote.value : '',
+      }),
+    })
+      .then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok) throw new Error((data && data.error) || 'Xəta');
+          return data;
+        });
+      })
+      .then(function (data) {
+        applyPack(data);
+        closeQiraatModal();
+        clearSelection();
+      })
+      .catch(function (err) {
+        alert(err.message || 'Saxlanılmadı');
+      })
+      .finally(function () {
+        qqSaveBtn.disabled = false;
+        qqSaveBtn.textContent = 'Yadda saxla';
+      });
+  }
+
   if (page) {
     page.addEventListener('pointerdown', function (e) {
       if (backdrop.classList.contains('open')) return;
+      if (qqBackdrop && qqBackdrop.classList.contains('open')) return;
       if (e.button != null && e.button !== 0) return;
       var g = wordGlyphFromEvent(e);
       if (!g) {
@@ -1291,29 +1500,44 @@
   });
 
   document.getElementById('vpSelOpen').addEventListener('click', openModal);
+  var qqSelOpen = document.getElementById('qqSelOpen');
+  if (qqSelOpen) qqSelOpen.addEventListener('click', openQiraatModal);
   document.getElementById('vpClose').addEventListener('click', closeModal);
   document.getElementById('vpCancel').addEventListener('click', closeModal);
+  var qqClose = document.getElementById('qqClose');
+  var qqCancel = document.getElementById('qqCancel');
+  if (qqClose) qqClose.addEventListener('click', closeQiraatModal);
+  if (qqCancel) qqCancel.addEventListener('click', closeQiraatModal);
   if (dirBtnIstinaf) dirBtnIstinaf.addEventListener('click', function () { setDirection('istinaf_first'); });
   if (dirBtnWaqf) dirBtnWaqf.addEventListener('click', function () { setDirection('waqf_first'); });
   if (deleteBtn) deleteBtn.addEventListener('click', deleteAnnotation);
+  if (qqDeleteBtn) qqDeleteBtn.addEventListener('click', deleteAnnotation);
   if (selDeleteBtn) selDeleteBtn.addEventListener('click', deleteAnnotation);
   backdrop.addEventListener('click', function (e) {
     if (e.target === backdrop) closeModal();
   });
+  if (qqBackdrop) {
+    qqBackdrop.addEventListener('click', function (e) {
+      if (e.target === qqBackdrop) closeQiraatModal();
+    });
+  }
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
-      if (backdrop.classList.contains('open')) closeModal();
+      if (qqBackdrop && qqBackdrop.classList.contains('open')) closeQiraatModal();
+      else if (backdrop.classList.contains('open')) closeModal();
       else clearSelection();
     }
     if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
       if (!lastInfo || !lastInfo.phrase) return;
       if (backdrop.classList.contains('open')) return;
+      if (qqBackdrop && qqBackdrop.classList.contains('open')) return;
       // copy event on page may not fire if focus elsewhere
       e.preventDefault();
       writeClipboard(lastInfo.phrase).catch(function () {});
     }
   });
   saveBtn.addEventListener('click', saveAnnotation);
+  if (qqSaveBtn) qqSaveBtn.addEventListener('click', saveQiraatAnnotation);
   window.addEventListener('scroll', function () {
     if (bubble.classList.contains('open') && picked.length) placeBubbleNearPicked();
   }, true);

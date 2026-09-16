@@ -5,6 +5,7 @@ from django.utils import timezone
 # Tətbiqdəki eyni rəng sistemi (wordInkMarks / wordAboutNotes)
 COLOR_WAQF = '#E53935'
 COLOR_ISTINAF = '#43A047'
+COLOR_QIRAAT = '#1E88E5'
 COLOR_GRAD_MID = 'rgba(0, 0, 0, 0)'
 
 
@@ -43,9 +44,16 @@ class SummaryNote(models.Model):
 
 class WordMarkNote(models.Model):
     """
-    Mushaf söz seçimi — vəqf / istinaf qeydi.
+    Mushaf söz seçimi — vəqf / istinaf və ya qiraət qeydi.
     Tətbiqdə: ink rəngi + AyahInfoSheet «Haqqında».
     """
+
+    KIND_WAQF_ISTINAF = 'waqf_istinaf'
+    KIND_QIRAAT = 'qiraat'
+    KIND_CHOICES = [
+        (KIND_WAQF_ISTINAF, 'Vəqf / İstinaf'),
+        (KIND_QIRAAT, 'Qiraət Qeydi'),
+    ]
 
     DIR_ISTINAF_FIRST = 'istinaf_first'  # yaşıl → … → qırmızı
     DIR_WAQF_FIRST = 'waqf_first'        # qırmızı → … → yaşıl
@@ -57,6 +65,11 @@ class WordMarkNote(models.Model):
     words = models.JSONField(
         default=list,
         help_text='[{"verseKey":"1:5","position":2,"text":"..."}]',
+    )
+    kind = models.CharField(
+        max_length=20,
+        choices=KIND_CHOICES,
+        default=KIND_WAQF_ISTINAF,
     )
     direction = models.CharField(
         max_length=20,
@@ -100,6 +113,21 @@ class WordMarkNote(models.Model):
         items = self._word_items()
         if not items:
             return []
+
+        if self.kind == self.KIND_QIRAAT:
+            # Həmişə yalnız ilk və son söz mavi (tək sözdə həmin söz)
+            n = len(items)
+            targets = items if n == 1 else [items[0], items[-1]]
+            return [
+                {
+                    'verseKey': w['verseKey'],
+                    'position': w['position'],
+                    'color': COLOR_QIRAAT,
+                    'noteId': self.pk,
+                }
+                for w in targets
+            ]
+
         has_w = bool((self.waqf_note or '').strip())
         has_i = bool((self.istinaf_note or '').strip())
         # Qeyd istəyə bağlı — boş olsa da işarələ
@@ -159,6 +187,53 @@ class WordMarkNote(models.Model):
         items = self._word_items()
         if not items:
             return []
+
+        if self.kind == self.KIND_QIRAAT:
+            body = (self.waqf_note or '').strip()
+            first = items[0]
+            last = items[-1]
+            lemma = ' '.join(w['text'] for w in items if w['text']) or first['verseKey']
+            examples = []
+            if len(items) == 1:
+                examples.append(
+                    {
+                        'label': 'Qiraət qeydi',
+                        'arabic': first['text'] or lemma,
+                        'color': COLOR_QIRAAT,
+                    }
+                )
+            else:
+                examples.append(
+                    {
+                        'label': 'Qiraət · başlanğıc',
+                        'arabic': first['text'] or lemma,
+                        'color': COLOR_QIRAAT,
+                    }
+                )
+                examples.append(
+                    {
+                        'label': 'Qiraət · son',
+                        'arabic': last['text'] or lemma,
+                        'color': COLOR_QIRAAT,
+                    }
+                )
+            # Haqqında — seçimin əhatə etdiyi hər ayə üçün eyni body
+            by_verse: dict[str, list[dict]] = {}
+            for w in items:
+                by_verse.setdefault(w['verseKey'], []).append(w)
+            notes = []
+            for vk, words in by_verse.items():
+                verse_lemma = ' '.join(w['text'] for w in words if w['text']) or vk
+                notes.append(
+                    {
+                        'verseKey': vk,
+                        'lemma': verse_lemma,
+                        'body': body,
+                        'examples': examples,
+                    }
+                )
+            return notes
+
         waqf = (self.waqf_note or '').strip()
         istinaf = (self.istinaf_note or '').strip()
         has_w = bool(waqf)

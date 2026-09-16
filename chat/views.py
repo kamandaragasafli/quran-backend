@@ -100,6 +100,29 @@ def _parse_words_payload(raw) -> list[dict]:
     return out
 
 
+def _unique_verse_keys(words: list[dict]) -> list[str]:
+    keys: list[str] = []
+    for w in words:
+        vk = w['verseKey']
+        if vk not in keys:
+            keys.append(vk)
+    return keys
+
+
+def _validate_qiraat_selection(words: list[dict]) -> str | None:
+    """1–3 ayə (istənilən söz sayı) və ya >3 ayə + 3–6 söz."""
+    ayah_count = len(_unique_verse_keys(words))
+    n = len(words)
+    if ayah_count <= 3:
+        return None
+    if 3 <= n <= 6:
+        return None
+    return (
+        'Qiraət qeydi: 1–3 ayə seçin, '
+        'və ya 3-dən çox ayədə 3–6 söz seçin (ilk və son söz mavi).'
+    )
+
+
 @api_view(['GET', 'POST'])
 def word_marks(request):
     """Söz rəngləri + Haqqında qeydləri (admin ↔ tətbiq)."""
@@ -111,6 +134,11 @@ def word_marks(request):
     istinaf_note = str(
         request.data.get('istinaf_note') or request.data.get('istinafNote') or ''
     ).strip()
+    # Qiraət qeydi — tək `note` sahəsi
+    note_text = str(request.data.get('note') or '').strip()
+    kind = str(request.data.get('kind') or WordMarkNote.KIND_WAQF_ISTINAF).strip()
+    if kind not in (WordMarkNote.KIND_WAQF_ISTINAF, WordMarkNote.KIND_QIRAAT):
+        kind = WordMarkNote.KIND_WAQF_ISTINAF
     direction = str(
         request.data.get('direction') or WordMarkNote.DIR_ISTINAF_FIRST
     ).strip()
@@ -122,6 +150,14 @@ def word_marks(request):
 
     if not words:
         return Response({'error': 'Söz seçin'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if kind == WordMarkNote.KIND_QIRAAT:
+        err = _validate_qiraat_selection(words)
+        if err:
+            return Response({'error': err}, status=status.HTTP_400_BAD_REQUEST)
+        waqf_note = note_text or waqf_note
+        istinaf_note = ''
+        direction = WordMarkNote.DIR_ISTINAF_FIRST
 
     touch_keys = {f"{w['verseKey']}:{w['position']}" for w in words}
     for note in list(WordMarkNote.objects.all()):
@@ -138,6 +174,7 @@ def word_marks(request):
 
     created = WordMarkNote.objects.create(
         words=words,
+        kind=kind,
         direction=direction,
         waqf_note=waqf_note,
         istinaf_note=istinaf_note,
