@@ -279,7 +279,8 @@
 .mushaf-glyph.is-tap {
   cursor: pointer;
   border-radius: 3px;
-  touch-action: none;
+  /* pan-y: mobildə səhifəni aşağı/yuxarı sürüşdürmək işləsin */
+  touch-action: pan-y;
 }
 .mushaf-glyph.is-tap:hover {
   background: rgba(43, 187, 173, 0.12);
@@ -685,9 +686,20 @@
   }
   .mushaf-nav-pager .btn-next { grid-area: next; }
   .mushaf-nav-pager .btn-prev { grid-area: prev; }
+  /* Kənar boşluq — barmağı kənara qoyub rahat scroll */
+  .mushaf-stage {
+    padding-left: 22px;
+    padding-right: 22px;
+    box-sizing: border-box;
+  }
   .mushaf-page {
-    padding: 14px 10px;
+    padding: 14px 8px;
     border-radius: 16px;
+    width: 100%;
+  }
+  .mushaf-line {
+    /* şaquli scroll üstün; üfüqi yalnız lazım olanda */
+    overscroll-behavior-x: contain;
   }
   .search-results table td.ar {
     font-size: 14px;
@@ -1440,6 +1452,15 @@
   }
 
   if (page) {
+    var touchStartX = 0;
+    var touchStartY = 0;
+    var touchPending = false;
+    var touchArmed = false; /* üfüqi sürükləmə ilə seçim başladı */
+
+    function isTouchLike(e) {
+      return e.pointerType === 'touch' || e.pointerType === 'pen';
+    }
+
     page.addEventListener('pointerdown', function (e) {
       if (backdrop.classList.contains('open')) return;
       if (qqBackdrop && qqBackdrop.classList.contains('open')) return;
@@ -1447,26 +1468,69 @@
       var g = wordGlyphFromEvent(e);
       if (!g) {
         if (!bubble.contains(e.target)) clearSelection();
+        touchPending = false;
+        touchArmed = false;
+        dragging = false;
         return;
       }
       var idx = glyphIndex(g);
       if (idx < 0) return;
-      e.preventDefault();
-      try { page.setPointerCapture(e.pointerId); } catch (err) {}
 
       if (e.shiftKey && dragAnchor >= 0) {
+        e.preventDefault();
         applyPickRange(dragAnchor, idx);
         dragging = false;
+        touchPending = false;
+        touchArmed = false;
         return;
       }
 
+      /* Mobil: dərhal preventDefault etmə — şaquli scroll işləsin.
+         Seçim yalnız üfüqi sürükləmədə aktivləşir. */
+      if (isTouchLike(e)) {
+        touchStartX = e.clientX;
+        touchStartY = e.clientY;
+        touchPending = true;
+        touchArmed = false;
+        dragging = false;
+        dragAnchor = idx;
+        return;
+      }
+
+      e.preventDefault();
+      try { page.setPointerCapture(e.pointerId); } catch (err) {}
       dragAnchor = idx;
       dragging = true;
       applyPickRange(idx, idx);
     });
 
     page.addEventListener('pointermove', function (e) {
+      if (touchPending && !touchArmed && isTouchLike(e)) {
+        var dx = e.clientX - touchStartX;
+        var dy = e.clientY - touchStartY;
+        var adx = Math.abs(dx);
+        var ady = Math.abs(dy);
+        /* Aşağı/yuxarı — scroll; seçimə qarışma */
+        if (ady > 10 && ady >= adx) {
+          touchPending = false;
+          dragAnchor = -1;
+          return;
+        }
+        /* Yan tərəfə sürükləmə — söz seçimi */
+        if (adx > 12 && adx > ady) {
+          touchArmed = true;
+          touchPending = false;
+          dragging = true;
+          e.preventDefault();
+          try { page.setPointerCapture(e.pointerId); } catch (err) {}
+          applyPickRange(dragAnchor, dragAnchor);
+        } else {
+          return;
+        }
+      }
+
       if (!dragging || dragAnchor < 0) return;
+      if (isTouchLike(e) && touchArmed) e.preventDefault();
       var g = wordGlyphFromEvent(e);
       if (!g) {
         // elementFromPoint — sürətli sürükləmədə target boş ola bilər
@@ -1480,10 +1544,22 @@
       applyPickRange(dragAnchor, idx);
     });
 
-    page.addEventListener('pointerup', function () {
+    page.addEventListener('pointerup', function (e) {
+      /* Qısa toxunuş (scroll/seçim yox) — tək söz seç */
+      if (touchPending && !touchArmed && dragAnchor >= 0 && isTouchLike(e)) {
+        var adx = Math.abs(e.clientX - touchStartX);
+        var ady = Math.abs(e.clientY - touchStartY);
+        if (adx < 10 && ady < 10) {
+          applyPickRange(dragAnchor, dragAnchor);
+        }
+      }
+      touchPending = false;
+      touchArmed = false;
       dragging = false;
     });
     page.addEventListener('pointercancel', function () {
+      touchPending = false;
+      touchArmed = false;
       dragging = false;
     });
 
