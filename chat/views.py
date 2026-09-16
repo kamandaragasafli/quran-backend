@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from dashboard.models import SummaryNote, WordMarkNote
+from dashboard.models import AppContent, SummaryNote, WordMarkNote
 
 from .models import ChatGroup, ChatMessage
 
@@ -12,6 +12,35 @@ def health(_request):
     from dashboard.mushaf import mushaf_status
 
     return Response({'ok': True, 'mushaf': mushaf_status()})
+
+
+@api_view(['GET'])
+def app_content_pack(_request):
+    """Haqqında + Məal giriş + Qarilər — tətbiq üçün pack."""
+    keys = [AppContent.KEY_ABOUT, AppContent.KEY_MEAL_INTRO, AppContent.KEY_RECITERS]
+    pages = {}
+    latest = None
+    for key in keys:
+        obj = AppContent.get_or_seed(key)
+        pages[key] = obj.data or {}
+        if obj.updated_at and (latest is None or obj.updated_at > latest):
+            latest = obj.updated_at
+    return Response(
+        {
+            'pages': pages,
+            'updated_at': latest.isoformat() if latest else None,
+        }
+    )
+
+
+@api_view(['GET'])
+def app_content_detail(_request, key: str):
+    key = (key or '').strip().replace('-', '_')
+    allowed = {AppContent.KEY_ABOUT, AppContent.KEY_MEAL_INTRO, AppContent.KEY_RECITERS}
+    if key not in allowed:
+        return Response({'error': 'Naməlum mətn'}, status=status.HTTP_404_NOT_FOUND)
+    obj = AppContent.get_or_seed(key)
+    return Response(obj.to_api())
 
 
 @api_view(['GET'])

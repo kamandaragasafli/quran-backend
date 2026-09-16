@@ -30,6 +30,8 @@
       --g-quran: linear-gradient(135deg, #7ED6C2, #2BBBAD);
       --g-telegram: linear-gradient(135deg, #7EC8E3, #4A9BC7);
       --g-reciters: linear-gradient(135deg, #A78BFA, #7C5CF0);
+      --g-about: linear-gradient(135deg, #F6C77A, #E8A84A);
+      --g-meal-intro: linear-gradient(135deg, #7ED6C2, #4A9BC7);
     }
     * { box-sizing: border-box; }
     body {
@@ -159,6 +161,8 @@
     }
     .nav a.nav-home.active { background: var(--g-home); }
     .nav a.nav-summaries.active { background: var(--g-summaries); }
+    .nav a.nav-about.active { background: var(--g-about); }
+    .nav a.nav-meal-intro.active { background: var(--g-meal-intro); }
     .nav a.nav-quran.active { background: var(--g-quran); }
     .nav a.nav-telegram.active { background: var(--g-telegram); }
     .nav a.nav-reciters.active { background: var(--g-reciters); }
@@ -166,6 +170,8 @@
     /* Idle accent strip on icon */
     .nav a.nav-home:not(.active) .nav-icon { background: rgba(62, 207, 142, 0.16); color: #2BA56E; }
     .nav a.nav-summaries:not(.active) .nav-icon { background: rgba(91, 157, 255, 0.16); color: #3A7AD9; }
+    .nav a.nav-about:not(.active) .nav-icon { background: rgba(232, 168, 74, 0.18); color: #C4842A; }
+    .nav a.nav-meal-intro:not(.active) .nav-icon { background: rgba(74, 155, 199, 0.16); color: #2F7FA8; }
     .nav a.nav-quran:not(.active) .nav-icon { background: rgba(43, 187, 173, 0.16); color: #1F9A8F; }
     .nav a.nav-telegram:not(.active) .nav-icon { background: rgba(74, 155, 199, 0.16); color: #2F7FA8; }
     .nav a.nav-reciters:not(.active) .nav-icon { background: rgba(124, 92, 240, 0.14); color: #6A4FD8; }
@@ -554,11 +560,17 @@
         <a href="{% url 'dash-summaries' %}" class="nav-summaries {% if nav == 'summaries' %}active{% endif %}">
           <span class="nav-icon">◈</span> Xülasələr
         </a>
+        <a href="{% url 'dash-about' %}" class="nav-about {% if nav == 'about' %}active{% endif %}">
+          <span class="nav-icon">ℹ</span> Haqqında
+        </a>
+        <a href="{% url 'dash-meal-intro' %}" class="nav-meal-intro {% if nav == 'meal_intro' %}active{% endif %}">
+          <span class="nav-icon">✎</span> Məal giriş
+        </a>
         <a href="{% url 'dash-quran' %}" class="nav-quran {% if nav == 'quran' %}active{% endif %}">
           <span class="nav-icon">☪</span> Quran
         </a>
         <a href="{% url 'dash-reciters' %}" class="nav-reciters {% if nav == 'reciters' %}active{% endif %}">
-          <span class="nav-icon">🎧</span> Qarilər haqqında
+          <span class="nav-icon">🎧</span> Qarilər
         </a>
       </nav>
 

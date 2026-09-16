@@ -289,5 +289,143 @@ def mushaf_font(request, filename: str):
     return resp
 
 
+def _flash_from_messages(request):
+    from django.contrib import messages
+
+    flash = ''
+    flash_err = False
+    storage = messages.get_messages(request)
+    for m in storage:
+        flash = str(m)
+        flash_err = m.level >= messages.ERROR
+        break
+    return flash, flash_err
+
+
+def about_content(request):
+    """Haqqında (Haqqımızda) mətni — tətbiq Intro ekranı."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from .models import AppContent
+
+    obj = AppContent.get_or_seed(AppContent.KEY_ABOUT)
+    data = dict(obj.data or {})
+
+    if request.method == 'POST':
+        title = (request.POST.get('title') or '').strip()
+        lead = (request.POST.get('lead') or '').strip()
+        body = (request.POST.get('body') or '').strip()
+        if not body:
+            messages.error(request, 'Mətn boş ola bilməz.')
+        else:
+            obj.data = {'title': title, 'lead': lead, 'body': body}
+            obj.save()
+            messages.success(request, 'Haqqında mətni yadda saxlanıldı — tətbiqdə görünəcək.')
+            return redirect('dash-about')
+        data = {'title': title, 'lead': lead, 'body': body}
+
+    flash, flash_err = _flash_from_messages(request)
+    return render(
+        request,
+        'dashboard/content_about.html',
+        {
+            'nav': 'about',
+            'form': data,
+            'updated_at': obj.updated_at,
+            'flash': flash,
+            'flash_err': flash_err,
+        },
+    )
+
+
+def meal_intro_content(request):
+    """Məal giriş mətni — tətbiq MealIntro ekranı."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from .models import AppContent
+
+    obj = AppContent.get_or_seed(AppContent.KEY_MEAL_INTRO)
+    data = dict(obj.data or {})
+
+    if request.method == 'POST':
+        payload = {
+            'title': (request.POST.get('title') or '').strip(),
+            'lead': (request.POST.get('lead') or '').strip(),
+            'body': (request.POST.get('body') or '').strip(),
+            'exampleLabel': (request.POST.get('exampleLabel') or '').strip() or 'Nümunə',
+            'exampleRange': (request.POST.get('exampleRange') or '').strip(),
+            'exampleHint': (request.POST.get('exampleHint') or '').strip(),
+        }
+        if not payload['body']:
+            messages.error(request, 'Mətn boş ola bilməz.')
+            data = payload
+        else:
+            obj.data = payload
+            obj.save()
+            messages.success(request, 'Məal giriş mətni yadda saxlanıldı — tətbiqdə görünəcək.')
+            return redirect('dash-meal-intro')
+
+    flash, flash_err = _flash_from_messages(request)
+    return render(
+        request,
+        'dashboard/content_meal_intro.html',
+        {
+            'nav': 'meal_intro',
+            'form': data,
+            'updated_at': obj.updated_at,
+            'flash': flash,
+            'flash_err': flash_err,
+        },
+    )
+
+
 def reciters(request):
-    return render(request, 'dashboard/reciters.html', {'nav': 'reciters'})
+    """Qarilər haqqında mətnlər — tətbiq Reciters ekranı."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from .models import AppContent
+
+    obj = AppContent.get_or_seed(AppContent.KEY_RECITERS)
+    data = dict(obj.data or {})
+    guides = list(data.get('guides') or [])
+
+    if request.method == 'POST':
+        action = (request.POST.get('action') or 'save').strip()
+        intro = (request.POST.get('intro') or '').strip()
+        if action == 'save_all':
+            new_guides = []
+            for i, g in enumerate(guides):
+                rid = g.get('reciterId') or f'g{i}'
+                tips_raw = request.POST.get(f'tips_{rid}', g.get('tips') or '')
+                new_guides.append(
+                    {
+                        'reciterId': rid,
+                        'label': (request.POST.get(f'label_{rid}') or g.get('label') or '').strip(),
+                        'level': (request.POST.get(f'level_{rid}') or g.get('level') or 'talim').strip(),
+                        'style': (request.POST.get(f'style_{rid}') or g.get('style') or '').strip(),
+                        'note': (request.POST.get(f'note_{rid}') or g.get('note') or '').strip(),
+                        'tips': tips_raw.strip() if isinstance(tips_raw, str) else '',
+                        'closing': (request.POST.get(f'closing_{rid}') or g.get('closing') or '').strip(),
+                    }
+                )
+            obj.data = {'intro': intro, 'guides': new_guides}
+            obj.save()
+            messages.success(request, 'Qarilər mətnləri yadda saxlanıldı — tətbiqdə görünəcək.')
+            return redirect('dash-reciters')
+
+    flash, flash_err = _flash_from_messages(request)
+    return render(
+        request,
+        'dashboard/reciters.html',
+        {
+            'nav': 'reciters',
+            'intro': data.get('intro') or '',
+            'guides': guides,
+            'updated_at': obj.updated_at,
+            'flash': flash,
+            'flash_err': flash_err,
+        },
+    )

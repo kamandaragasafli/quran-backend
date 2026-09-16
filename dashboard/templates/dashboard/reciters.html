@@ -1,15 +1,108 @@
 {% extends "dashboard/base.html" %}
 
 {% block title %}Qarilər · Miras{% endblock %}
-{% block page_title %}Qarilər haqqında{% endblock %}
-{% block page_sub %}Qarilər haqqındakı mətnlər — Miras{% endblock %}
+{% block page_title %}Qarilər{% endblock %}
+{% block page_sub %}Tətbiqdəki Qarilər mətnləri — dəyişiklik API üzərindən görünür{% endblock %}
+
+{% block extra_css %}
+<style>
+.ct-flash {
+  padding: 12px 14px; border-radius: 14px; margin-bottom: 14px; font-weight: 700; font-size: 14px;
+}
+.ct-flash.ok { background: rgba(62,207,142,.16); color: #1F8A5A; }
+.ct-flash.err { background: rgba(229,57,53,.12); color: #C62828; }
+.ct-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.ct-field label {
+  font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: #6B7C8F;
+}
+.ct-field input, .ct-field textarea, .ct-field select {
+  width: 100%; box-sizing: border-box; border: 1.5px solid #D7E3F4; background: #F7FAFD;
+  border-radius: 12px; padding: 11px 12px; font: inherit; font-weight: 600; color: var(--text);
+}
+.ct-field textarea { min-height: 140px; line-height: 1.5; font-weight: 500; resize: vertical; }
+.ct-field input:focus, .ct-field textarea:focus, .ct-field select:focus {
+  outline: none; border-color: #7C5CF0; background: #fff; box-shadow: 0 0 0 3px rgba(124,92,240,.18);
+}
+.rc-card {
+  border: 1px solid rgba(28,42,58,.1); border-radius: 18px; padding: 16px; margin-bottom: 14px;
+  background: #fff;
+}
+.rc-card h3 { margin: 0 0 12px; font-size: 16px; font-weight: 800; }
+.rc-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 700px) { .rc-grid2 { grid-template-columns: 1fr; } }
+.ct-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 16px 0 8px; }
+.ct-btn {
+  appearance: none; border: 0; border-radius: 14px; padding: 12px 20px; font: inherit; font-weight: 800;
+  cursor: pointer; color: #fff; background: linear-gradient(135deg, #A78BFA, #7C5CF0);
+  box-shadow: 0 10px 24px rgba(124,92,240,.35);
+}
+.ct-meta { font-size: 12px; color: var(--muted); font-weight: 600; }
+.ct-hint { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="panel">
-  <h2>Qarilər haqqında mətnlər</h2>
-  <p class="empty">
-    Tətbiqdəki «Qarilər» bələdçisi mətnləri (intro, qeyd, məsləhətlər) burada idarə olunacaq.
-    Sidebar və səhifə hazırdır — redaktə forması növbəti addımda əlavə edilə bilər.
-  </p>
-</div>
+{% if flash %}
+  <div class="ct-flash {% if flash_err %}err{% else %}ok{% endif %}">{{ flash }}</div>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="save_all" />
+
+  <div class="panel">
+    <h2>Ümumi giriş (istəyə bağlı)</h2>
+    <div class="ct-field">
+      <label for="intro">Intro</label>
+      <textarea id="intro" name="intro" style="min-height:80px">{{ intro }}</textarea>
+    </div>
+  </div>
+
+  {% for g in guides %}
+  <div class="rc-card">
+    <h3>{{ g.label|default:g.reciterId }}</h3>
+    <input type="hidden" name="reciterId_{{ g.reciterId }}" value="{{ g.reciterId }}" />
+    <div class="rc-grid2">
+      <div class="ct-field">
+        <label>Ad / etiket</label>
+        <input name="label_{{ g.reciterId }}" value="{{ g.label|default:'' }}" />
+      </div>
+      <div class="ct-field">
+        <label>Kateqoriya (level)</label>
+        <select name="level_{{ g.reciterId }}">
+          <option value="talim" {% if g.level == 'talim' %}selected{% endif %}>talim</option>
+          <option value="ciddi" {% if g.level == 'ciddi' %}selected{% endif %}>ciddi</option>
+          <option value="ireli" {% if g.level == 'ireli' %}selected{% endif %}>ireli</option>
+          <option value="mexrec" {% if g.level == 'mexrec' %}selected{% endif %}>mexrec</option>
+          <option value="xususi" {% if g.level == 'xususi' %}selected{% endif %}>xususi</option>
+        </select>
+      </div>
+    </div>
+    <div class="ct-field">
+      <label>Stil (qısa)</label>
+      <input name="style_{{ g.reciterId }}" value="{{ g.style|default:'' }}" />
+    </div>
+    <div class="ct-field">
+      <label>Əsas mətn (note)</label>
+      <textarea name="note_{{ g.reciterId }}">{{ g.note|default:'' }}</textarea>
+    </div>
+    <div class="ct-field">
+      <label>Məsləhətlər (hər sətir bir madde)</label>
+      <textarea name="tips_{{ g.reciterId }}" style="min-height:100px">{{ g.tips|default:'' }}</textarea>
+    </div>
+    <div class="ct-field">
+      <label>Bağlanış (closing)</label>
+      <textarea name="closing_{{ g.reciterId }}" style="min-height:70px">{{ g.closing|default:'' }}</textarea>
+    </div>
+  </div>
+  {% empty %}
+  <div class="panel"><p class="empty">Qari siyahısı boşdur — seed yüklənməyib.</p></div>
+  {% endfor %}
+
+  <div class="ct-actions">
+    <button type="submit" class="ct-btn">Hamısını yadda saxla</button>
+    {% if updated_at %}<span class="ct-meta">Son yeniləmə: {{ updated_at|date:"d.m.Y H:i" }}</span>{% endif %}
+  </div>
+  <p class="ct-hint">Yadda saxladıqdan sonra tətbiq açılışında / fokusda `/api/app-content/reciters/` yüklənir.</p>
+</form>
 {% endblock %}

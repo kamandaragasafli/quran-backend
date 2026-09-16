@@ -9,6 +9,49 @@ COLOR_QIRAAT = '#1E88E5'
 COLOR_GRAD_MID = 'rgba(0, 0, 0, 0)'
 
 
+class AppContent(models.Model):
+    """Tətbiq mətnləri — Haqqında, Məal giriş, Qarilər (admin ↔ API)."""
+
+    KEY_ABOUT = 'about'
+    KEY_MEAL_INTRO = 'meal_intro'
+    KEY_RECITERS = 'reciters'
+    KEY_CHOICES = [
+        (KEY_ABOUT, 'Haqqında'),
+        (KEY_MEAL_INTRO, 'Məal giriş'),
+        (KEY_RECITERS, 'Qarilər'),
+    ]
+
+    key = models.SlugField(max_length=40, unique=True, choices=KEY_CHOICES)
+    data = models.JSONField(default=dict, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['key']
+        verbose_name = 'Tətbiq mətnı'
+        verbose_name_plural = 'Tətbiq mətnləri'
+
+    def __str__(self):
+        return dict(self.KEY_CHOICES).get(self.key, self.key)
+
+    @classmethod
+    def get_or_seed(cls, key: str) -> 'AppContent':
+        from .content_defaults import default_for
+
+        obj, created = cls.objects.get_or_create(key=key, defaults={'data': default_for(key)})
+        if created or not obj.data:
+            obj.data = default_for(key)
+            obj.save(update_fields=['data', 'updated_at'])
+        return obj
+
+    def to_api(self) -> dict:
+        return {
+            'key': self.key,
+            'data': self.data or {},
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
 class SummaryNote(models.Model):
     SCOPE_SURAH = 'surah'
     SCOPE_AYAH = 'ayah'

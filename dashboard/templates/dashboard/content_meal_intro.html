@@ -1,0 +1,79 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Məal giriş · Miras{% endblock %}
+{% block page_title %}Məal giriş{% endblock %}
+{% block page_sub %}Tətbiqdəki Məal giriş ekranı — dəyişiklik API üzərindən görünür{% endblock %}
+
+{% block extra_css %}
+<style>
+.ct-flash {
+  padding: 12px 14px; border-radius: 14px; margin-bottom: 14px; font-weight: 700; font-size: 14px;
+}
+.ct-flash.ok { background: rgba(62,207,142,.16); color: #1F8A5A; }
+.ct-flash.err { background: rgba(229,57,53,.12); color: #C62828; }
+.ct-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.ct-field label {
+  font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: #6B7C8F;
+}
+.ct-field input, .ct-field textarea {
+  width: 100%; box-sizing: border-box; border: 1.5px solid #D7E3F4; background: #F7FAFD;
+  border-radius: 12px; padding: 12px 14px; font: inherit; font-weight: 600; color: var(--text);
+}
+.ct-field textarea { min-height: 280px; line-height: 1.55; font-weight: 500; resize: vertical; }
+.ct-field input:focus, .ct-field textarea:focus {
+  outline: none; border-color: #4A9BC7; background: #fff; box-shadow: 0 0 0 3px rgba(74,155,199,.2);
+}
+.ct-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 700px) { .ct-grid2 { grid-template-columns: 1fr; } }
+.ct-hint { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+.ct-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.ct-btn {
+  appearance: none; border: 0; border-radius: 14px; padding: 12px 20px; font: inherit; font-weight: 800;
+  cursor: pointer; color: #fff; background: linear-gradient(135deg, #7ED6C2, #4A9BC7);
+  box-shadow: 0 10px 24px rgba(74,155,199,.35);
+}
+.ct-meta { font-size: 12px; color: var(--muted); font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if flash %}
+  <div class="ct-flash {% if flash_err %}err{% else %}ok{% endif %}">{{ flash }}</div>
+{% endif %}
+
+<form method="post" class="panel">
+  {% csrf_token %}
+  <h2>Məal giriş mətni</h2>
+  <div class="ct-field">
+    <label for="title">Başlıq</label>
+    <input id="title" name="title" value="{{ form.title|default:'' }}" />
+  </div>
+  <div class="ct-field">
+    <label for="lead">Qısa giriş</label>
+    <input id="lead" name="lead" value="{{ form.lead|default:'' }}" />
+  </div>
+  <div class="ct-field">
+    <label for="body">Parağraflar</label>
+    <textarea id="body" name="body">{{ form.body|default:'' }}</textarea>
+    <p class="ct-hint">Paraqrafları boş sətirlə ayırın.</p>
+  </div>
+  <div class="ct-grid2">
+    <div class="ct-field">
+      <label for="exampleLabel">Nümunə başlığı</label>
+      <input id="exampleLabel" name="exampleLabel" value="{{ form.exampleLabel|default:'Nümunə' }}" />
+    </div>
+    <div class="ct-field">
+      <label for="exampleRange">Nümunə aralıq</label>
+      <input id="exampleRange" name="exampleRange" value="{{ form.exampleRange|default:'' }}" />
+    </div>
+  </div>
+  <div class="ct-field">
+    <label for="exampleHint">Nümunə izahı</label>
+    <textarea id="exampleHint" name="exampleHint" style="min-height:100px">{{ form.exampleHint|default:'' }}</textarea>
+  </div>
+  <div class="ct-actions">
+    <button type="submit" class="ct-btn">Yadda saxla</button>
+    {% if updated_at %}<span class="ct-meta">Son yeniləmə: {{ updated_at|date:"d.m.Y H:i" }}</span>{% endif %}
+  </div>
+</form>
+{% endblock %}

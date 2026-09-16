@@ -5,6 +5,10 @@ from . import views
 urlpatterns = [
     path('health', views.health),
     path('health/', views.health),
+    path('app-content', views.app_content_pack),
+    path('app-content/', views.app_content_pack),
+    path('app-content/<str:key>', views.app_content_detail),
+    path('app-content/<str:key>/', views.app_content_detail),
     path('xulaseler', views.meal_summaries),
     path('xulaseler/', views.meal_summaries),
     path('quran-meal-notes', views.meal_summaries),

@@ -41,6 +41,8 @@ Yoxlama: `GET /api/health` → `mushaf.surah_count: 114`, `mushaf.pages_ok: true
 |--------|------|--------|
 | GET | `/api/health` | Canlılıq |
 | GET | `/api/xulaseler/` | Məal xülasələri |
+| GET | `/api/app-content/` | Haqqında · Məal giriş · Qarilər mətnləri |
+| GET | `/api/app-content/<key>/` | Tək səhifə (`about` / `meal_intro` / `reciters`) |
 | GET/POST | `/api/word-marks/` | Söz rəngləri |
 | DELETE | `/api/word-marks/<id>/` | İşarə sil |
 
