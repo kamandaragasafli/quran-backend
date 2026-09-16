@@ -290,10 +290,37 @@
   border-radius: 4px;
   box-shadow: inset 0 0 0 1px rgba(43, 187, 173, 0.45);
 }
+/* وَمَا / فَمَا… — yalnız «مَا» tərəfi (RTL-də sol) */
+.mushaf-glyph.is-picked-ma {
+  background: linear-gradient(
+    to left,
+    transparent 0%,
+    transparent 36%,
+    rgba(43, 187, 173, 0.4) 36%,
+    rgba(43, 187, 173, 0.4) 100%
+  ) !important;
+  border-radius: 4px;
+  box-shadow: none;
+}
 .mushaf-glyph.is-ink-waqf { color: #E53935 !important; }
 .mushaf-glyph.is-ink-istinaf { color: #43A047 !important; }
 .mushaf-glyph.is-ink-qiraat { color: #1E88E5 !important; }
 .mushaf-glyph.is-ink-ma { color: #E53935 !important; font-weight: 600; }
+/* Birləşmiş وَمَا glyph: yalnız مَا qırmızı */
+.mushaf-glyph.is-ink-ma.is-ma-compound {
+  font-weight: 600;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(
+    to left,
+    #1A2430 0%,
+    #1A2430 36%,
+    #E53935 36%,
+    #E53935 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
 .mushaf-glyph.is-ink-grad {
   background: linear-gradient(90deg, #E53935 0%, #1A2430 48%, #43A047 100%);
   -webkit-background-clip: text;
@@ -1072,17 +1099,25 @@
 
   function clearPickVisual() {
     allTapGlyphs.forEach(function (g) {
-      g.classList.remove('is-picked');
+      g.classList.remove('is-picked', 'is-picked-ma');
+      g.removeAttribute('data-pick-ma');
     });
   }
 
-  function applyPickRange(fromIdx, toIdx) {
+  function applyPickRange(fromIdx, toIdx, opts) {
+    opts = opts || {};
     var a = Math.min(fromIdx, toIdx);
     var b = Math.max(fromIdx, toIdx);
     picked = wordGlyphs.slice(a, b + 1);
     clearPickVisual();
     picked.forEach(function (g) {
-      g.classList.add('is-picked');
+      var maOnly = opts.maOnly && a === b && isMaCompoundWord(g.getAttribute('data-text') || '');
+      if (maOnly) {
+        g.setAttribute('data-pick-ma', '1');
+        g.classList.add('is-picked-ma');
+      } else {
+        g.classList.add('is-picked');
+      }
     });
     lastInfo = infoFromGlyphs(picked);
     activeNoteId = noteIdForPicked();
@@ -1147,6 +1182,9 @@
       var v = g.getAttribute('data-verse') || '';
       var pos = parseInt(g.getAttribute('data-position') || '0', 10);
       if (!v || !pos) return;
+      if (g.getAttribute('data-pick-ma') === '1') {
+        t = extractMaCore(t);
+      }
       words.push({ verseKey: v, position: pos, text: t });
       if (t) texts.push(t);
       if (verses.indexOf(v) === -1) verses.push(v);
@@ -1180,6 +1218,22 @@
       .trim();
   }
 
+  /** وَمَا / فَمَا / بِمَا… — QCF-də tək glyph */
+  function isMaCompoundWord(text) {
+    var t = foldMaText(text);
+    if (!t || t === 'ما') return false;
+    return /^(و|ف|ب|ل|ك)ما$/.test(t) || (t.length <= 4 && t.endsWith('ما') && t !== 'ما');
+  }
+
+  function extractMaCore(text) {
+    if (!isMaCompoundWord(text) && foldMaText(text) !== 'ما') {
+      return (text || '').trim() || 'مَا';
+    }
+    /* Orijinal hərəkəli «مَا» varsa saxla */
+    var m = String(text || '').match(/م[\u064B-\u065F\u0670]*ا/);
+    return m ? m[0] : 'مَا';
+  }
+
   /** Seçilmiş sözlərdən ən azı biri «ما» (və ya وَمَا, فَمَا…) */
   function selectionHasMa(info) {
     var words = (info && info.words) || [];
@@ -1189,6 +1243,38 @@
       if (t === 'ما' || t.endsWith('ما')) return true;
     }
     return false;
+  }
+
+  /** مَا ədatı üçün seçimi «مَا»yə daralt (وَ seçilməsin) */
+  function narrowSelectionToMa() {
+    if (!picked.length) return;
+    picked.forEach(function (g) {
+      var raw = g.getAttribute('data-text') || '';
+      if (!isMaCompoundWord(raw) && foldMaText(raw) !== 'ما') return;
+      g.classList.remove('is-picked');
+      g.setAttribute('data-pick-ma', '1');
+      g.classList.add('is-picked-ma');
+    });
+    lastInfo = infoFromGlyphs(picked);
+    syncDeleteButtons();
+  }
+
+  /**
+   * وَمَا glyph: RTL-də sağ tərəf و, sol tərəf مَا.
+   * Sol ~62% zonaya toxunanda yalnız مَا seçilir.
+   */
+  function clickPrefersMaPart(g, clientX) {
+    if (!g || !isMaCompoundWord(g.getAttribute('data-text') || '')) return false;
+    var r = g.getBoundingClientRect();
+    if (r.width < 4) return true;
+    var ratio = (clientX - r.left) / r.width;
+    return ratio < 0.62;
+  }
+
+  function pickSingleGlyph(idx, clientX) {
+    var g = wordGlyphs[idx];
+    var maOnly = g && clickPrefersMaPart(g, clientX);
+    applyPickRange(idx, idx, { maOnly: maOnly });
   }
 
   function syncMaButtonVisibility() {
@@ -1257,10 +1343,18 @@
 
   function paintInk() {
     allTapGlyphs.forEach(function (g) {
-      g.classList.remove('is-ink-waqf', 'is-ink-istinaf', 'is-ink-qiraat', 'is-ink-ma', 'is-ink-grad');
+      g.classList.remove(
+        'is-ink-waqf',
+        'is-ink-istinaf',
+        'is-ink-qiraat',
+        'is-ink-ma',
+        'is-ma-compound',
+        'is-ink-grad'
+      );
       g.style.removeProperty('color');
       g.style.removeProperty('-webkit-text-fill-color');
       g.style.removeProperty('background');
+      g.style.removeProperty('background-image');
       g.style.removeProperty('-webkit-background-clip');
       g.style.removeProperty('background-clip');
       var v = g.getAttribute('data-verse') || '';
@@ -1269,6 +1363,9 @@
       if (!mark) return;
       if (mark.kind === 'ma_inkar') {
         g.classList.add('is-ink-ma');
+        if (isMaCompoundWord(g.getAttribute('data-text') || '')) {
+          g.classList.add('is-ma-compound');
+        }
       } else if (mark.textGradient && mark.textGradient.length) {
         g.classList.add('is-ink-grad');
       } else if (mark.color === '#E53935') {
@@ -1431,6 +1528,7 @@
       alert('Söz seçin');
       return;
     }
+    narrowSelectionToMa();
     if (!selectionHasMa(lastInfo)) {
       alert('Yalnız «مَا» seçildikdə açılır');
       return;
@@ -1668,7 +1766,7 @@
       try { page.setPointerCapture(e.pointerId); } catch (err) {}
       dragAnchor = idx;
       dragging = true;
-      applyPickRange(idx, idx);
+      pickSingleGlyph(idx, e.clientX);
     });
 
     page.addEventListener('pointermove', function (e) {
@@ -1717,7 +1815,7 @@
         var adx = Math.abs(e.clientX - touchStartX);
         var ady = Math.abs(e.clientY - touchStartY);
         if (adx < 10 && ady < 10) {
-          applyPickRange(dragAnchor, dragAnchor);
+          pickSingleGlyph(dragAnchor, e.clientX);
         }
       }
       touchPending = false;

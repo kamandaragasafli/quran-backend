@@ -263,7 +263,7 @@ class WordMarkNote(models.Model):
                 lemma = ' '.join(w['text'] for w in words if w['text']) or vk
                 examples = [
                     {
-                        'label': 'İnkar',
+                        'label': 'İnkar (nəfy)',
                         'arabic': (w.get('text') or '').strip() or 'مَا',
                         'color': COLOR_MA_INKAR,
                     }
@@ -271,7 +271,7 @@ class WordMarkNote(models.Model):
                     if (w.get('text') or '').strip()
                 ]
                 if not examples:
-                    examples = [{'label': 'İnkar', 'arabic': 'مَا', 'color': COLOR_MA_INKAR}]
+                    examples = [{'label': 'İnkar (nəfy)', 'arabic': 'مَا', 'color': COLOR_MA_INKAR}]
                 notes.append(
                     {
                         'verseKey': vk,
