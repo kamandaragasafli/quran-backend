@@ -339,6 +339,60 @@ def about_content(request):
     )
 
 
+def telegram_content(request):
+    """Telegram kanalı — tətbiq Telegram ekranı (link + mətn)."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from .models import AppContent
+
+    obj = AppContent.get_or_seed(AppContent.KEY_TELEGRAM)
+    data = dict(obj.data or {})
+
+    if request.method == 'POST':
+        url = (request.POST.get('url') or '').strip()
+        handle = (request.POST.get('handle') or '').strip()
+        if url and not handle:
+            handle = url.replace('https://', '').replace('http://', '').rstrip('/')
+        payload = {
+            'url': url,
+            'handle': handle,
+            'channelLabel': (request.POST.get('channelLabel') or '').strip() or 'Miras kanalı',
+            'headline': (request.POST.get('headline') or '').strip(),
+            'body': (request.POST.get('body') or '').strip(),
+            'pair': (request.POST.get('pair') or '').strip(),
+            'brand': (request.POST.get('brand') or '').strip() or 'MİRAS',
+            'slogan': (request.POST.get('slogan') or '').strip(),
+            'note': (request.POST.get('note') or '').strip(),
+            'author': (request.POST.get('author') or '').strip(),
+            'ctaLabel': (request.POST.get('ctaLabel') or '').strip() or 'Kanala keç',
+        }
+        if not payload['url']:
+            messages.error(request, 'Kanal linki boş ola bilməz.')
+            data = payload
+        elif not payload['body'] and not payload['headline']:
+            messages.error(request, 'Başlıq və ya mətn yazın.')
+            data = payload
+        else:
+            obj.data = payload
+            obj.save()
+            messages.success(request, 'Telegram mətni yadda saxlanıldı — tətbiqdə görünəcək.')
+            return redirect('dash-telegram')
+
+    flash, flash_err = _flash_from_messages(request)
+    return render(
+        request,
+        'dashboard/content_telegram.html',
+        {
+            'nav': 'telegram',
+            'form': data,
+            'updated_at': obj.updated_at,
+            'flash': flash,
+            'flash_err': flash_err,
+        },
+    )
+
+
 def meal_intro_content(request):
     """Məal giriş mətni — tətbiq MealIntro ekranı."""
     from django.contrib import messages

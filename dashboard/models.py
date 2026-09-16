@@ -6,19 +6,22 @@ from django.utils import timezone
 COLOR_WAQF = '#E53935'
 COLOR_ISTINAF = '#43A047'
 COLOR_QIRAAT = '#1E88E5'
+COLOR_MA_INKAR = '#E53935'
 COLOR_GRAD_MID = 'rgba(0, 0, 0, 0)'
 
 
 class AppContent(models.Model):
-    """Tətbiq mətnləri — Haqqında, Məal giriş, Qarilər (admin ↔ API)."""
+    """Tətbiq mətnləri — Haqqında, Məal giriş, Qarilər, Telegram (admin ↔ API)."""
 
     KEY_ABOUT = 'about'
     KEY_MEAL_INTRO = 'meal_intro'
     KEY_RECITERS = 'reciters'
+    KEY_TELEGRAM = 'telegram'
     KEY_CHOICES = [
         (KEY_ABOUT, 'Haqqında'),
         (KEY_MEAL_INTRO, 'Məal giriş'),
         (KEY_RECITERS, 'Qarilər'),
+        (KEY_TELEGRAM, 'Telegram'),
     ]
 
     key = models.SlugField(max_length=40, unique=True, choices=KEY_CHOICES)
@@ -93,9 +96,11 @@ class WordMarkNote(models.Model):
 
     KIND_WAQF_ISTINAF = 'waqf_istinaf'
     KIND_QIRAAT = 'qiraat'
+    KIND_MA_INKAR = 'ma_inkar'
     KIND_CHOICES = [
         (KIND_WAQF_ISTINAF, 'Vəqf / İstinaf'),
         (KIND_QIRAAT, 'Qiraət Qeydi'),
+        (KIND_MA_INKAR, 'Mə inkar ədatı'),
     ]
 
     DIR_ISTINAF_FIRST = 'istinaf_first'  # yaşıl → … → qırmızı
@@ -157,6 +162,19 @@ class WordMarkNote(models.Model):
         if not items:
             return []
 
+        if self.kind == self.KIND_MA_INKAR:
+            return [
+                {
+                    'verseKey': w['verseKey'],
+                    'position': w['position'],
+                    'color': COLOR_MA_INKAR,
+                    'kind': self.KIND_MA_INKAR,
+                    'text': w.get('text') or '',
+                    'noteId': self.pk,
+                }
+                for w in items
+            ]
+
         if self.kind == self.KIND_QIRAAT:
             # Həmişə yalnız ilk və son söz mavi (tək sözdə həmin söz)
             n = len(items)
@@ -166,6 +184,7 @@ class WordMarkNote(models.Model):
                     'verseKey': w['verseKey'],
                     'position': w['position'],
                     'color': COLOR_QIRAAT,
+                    'kind': self.KIND_QIRAAT,
                     'noteId': self.pk,
                 }
                 for w in targets
@@ -194,6 +213,7 @@ class WordMarkNote(models.Model):
                     'verseKey': first['verseKey'],
                     'position': first['position'],
                     'color': first_color,
+                    'kind': self.KIND_WAQF_ISTINAF,
                     'noteId': self.pk,
                 }
             )
@@ -202,6 +222,7 @@ class WordMarkNote(models.Model):
                     'verseKey': last['verseKey'],
                     'position': last['position'],
                     'color': last_color,
+                    'kind': self.KIND_WAQF_ISTINAF,
                     'noteId': self.pk,
                 }
             )
@@ -211,6 +232,7 @@ class WordMarkNote(models.Model):
             mark: dict = {
                 'verseKey': w['verseKey'],
                 'position': w['position'],
+                'kind': self.KIND_WAQF_ISTINAF,
                 'noteId': self.pk,
             }
             if has_w and has_i:
@@ -230,6 +252,37 @@ class WordMarkNote(models.Model):
         items = self._word_items()
         if not items:
             return []
+
+        if self.kind == self.KIND_MA_INKAR:
+            body = (self.waqf_note or '').strip()
+            by_verse: dict[str, list[dict]] = {}
+            for w in items:
+                by_verse.setdefault(w['verseKey'], []).append(w)
+            notes = []
+            for vk, words in by_verse.items():
+                lemma = ' '.join(w['text'] for w in words if w['text']) or vk
+                examples = [
+                    {
+                        'label': 'İnkar',
+                        'arabic': (w.get('text') or '').strip() or 'مَا',
+                        'color': COLOR_MA_INKAR,
+                    }
+                    for w in words
+                    if (w.get('text') or '').strip()
+                ]
+                if not examples:
+                    examples = [{'label': 'İnkar', 'arabic': 'مَا', 'color': COLOR_MA_INKAR}]
+                notes.append(
+                    {
+                        'verseKey': vk,
+                        'lemma': lemma,
+                        'body': body,
+                        'examples': examples,
+                        'positions': [w['position'] for w in words],
+                        'kind': self.KIND_MA_INKAR,
+                    }
+                )
+            return notes
 
         if self.kind == self.KIND_QIRAAT:
             body = (self.waqf_note or '').strip()

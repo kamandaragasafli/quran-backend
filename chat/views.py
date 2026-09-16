@@ -16,8 +16,13 @@ def health(_request):
 
 @api_view(['GET'])
 def app_content_pack(_request):
-    """Haqqında + Məal giriş + Qarilər — tətbiq üçün pack."""
-    keys = [AppContent.KEY_ABOUT, AppContent.KEY_MEAL_INTRO, AppContent.KEY_RECITERS]
+    """Haqqında + Məal giriş + Qarilər + Telegram — tətbiq üçün pack."""
+    keys = [
+        AppContent.KEY_ABOUT,
+        AppContent.KEY_MEAL_INTRO,
+        AppContent.KEY_RECITERS,
+        AppContent.KEY_TELEGRAM,
+    ]
     pages = {}
     latest = None
     for key in keys:
@@ -36,7 +41,12 @@ def app_content_pack(_request):
 @api_view(['GET'])
 def app_content_detail(_request, key: str):
     key = (key or '').strip().replace('-', '_')
-    allowed = {AppContent.KEY_ABOUT, AppContent.KEY_MEAL_INTRO, AppContent.KEY_RECITERS}
+    allowed = {
+        AppContent.KEY_ABOUT,
+        AppContent.KEY_MEAL_INTRO,
+        AppContent.KEY_RECITERS,
+        AppContent.KEY_TELEGRAM,
+    }
     if key not in allowed:
         return Response({'error': 'Naməlum mətn'}, status=status.HTTP_404_NOT_FOUND)
     obj = AppContent.get_or_seed(key)
@@ -166,7 +176,11 @@ def word_marks(request):
     # Qiraət qeydi — tək `note` sahəsi
     note_text = str(request.data.get('note') or '').strip()
     kind = str(request.data.get('kind') or WordMarkNote.KIND_WAQF_ISTINAF).strip()
-    if kind not in (WordMarkNote.KIND_WAQF_ISTINAF, WordMarkNote.KIND_QIRAAT):
+    if kind not in (
+        WordMarkNote.KIND_WAQF_ISTINAF,
+        WordMarkNote.KIND_QIRAAT,
+        WordMarkNote.KIND_MA_INKAR,
+    ):
         kind = WordMarkNote.KIND_WAQF_ISTINAF
     direction = str(
         request.data.get('direction') or WordMarkNote.DIR_ISTINAF_FIRST
@@ -184,6 +198,10 @@ def word_marks(request):
         err = _validate_qiraat_selection(words)
         if err:
             return Response({'error': err}, status=status.HTTP_400_BAD_REQUEST)
+        waqf_note = note_text or waqf_note
+        istinaf_note = ''
+        direction = WordMarkNote.DIR_ISTINAF_FIRST
+    elif kind == WordMarkNote.KIND_MA_INKAR:
         waqf_note = note_text or waqf_note
         istinaf_note = ''
         direction = WordMarkNote.DIR_ISTINAF_FIRST

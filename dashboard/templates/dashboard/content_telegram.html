@@ -1,0 +1,115 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Telegram · Miras{% endblock %}
+{% block page_title %}Telegram{% endblock %}
+{% block page_sub %}Tətbiqdəki Telegram bölməsi — link və mətn API üzərindən dəyişir{% endblock %}
+
+{% block extra_css %}
+<style>
+.ct-flash {
+  padding: 12px 14px; border-radius: 14px; margin-bottom: 14px; font-weight: 700; font-size: 14px;
+}
+.ct-flash.ok { background: rgba(62,207,142,.16); color: #1F8A5A; }
+.ct-flash.err { background: rgba(229,57,53,.12); color: #C62828; }
+.ct-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.ct-field label {
+  font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: #6B7C8F;
+}
+.ct-field input, .ct-field textarea {
+  width: 100%; box-sizing: border-box; border: 1.5px solid #D7E3F4; background: #F7FAFD;
+  border-radius: 12px; padding: 12px 14px; font: inherit; font-weight: 600; color: var(--text);
+}
+.ct-field textarea { min-height: 180px; line-height: 1.55; font-weight: 500; resize: vertical; }
+.ct-field textarea.body { min-height: 280px; }
+.ct-field input:focus, .ct-field textarea:focus {
+  outline: none; border-color: #2AABEE; background: #fff; box-shadow: 0 0 0 3px rgba(42,171,238,.2);
+}
+.ct-hint { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+.ct-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.ct-btn {
+  appearance: none; border: 0; border-radius: 14px; padding: 12px 20px; font: inherit; font-weight: 800;
+  cursor: pointer; color: #fff; background: linear-gradient(135deg, #5BC4F5, #2AABEE);
+  box-shadow: 0 10px 24px rgba(42,171,238,.35);
+}
+.ct-meta { font-size: 12px; color: var(--muted); font-weight: 600; }
+.ct-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 720px) { .ct-row { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if flash %}
+  <div class="ct-flash {% if flash_err %}err{% else %}ok{% endif %}">{{ flash }}</div>
+{% endif %}
+
+<form method="post" class="panel">
+  {% csrf_token %}
+  <h2>Telegram kanalı</h2>
+
+  <div class="ct-row">
+    <div class="ct-field">
+      <label for="url">Kanal linki</label>
+      <input id="url" name="url" value="{{ form.url|default:'' }}" placeholder="https://t.me/…" />
+      <p class="ct-hint">Tətbiqdə «Kanala keç» bu ünvana açılır.</p>
+    </div>
+    <div class="ct-field">
+      <label for="handle">Görünən ünvan</label>
+      <input id="handle" name="handle" value="{{ form.handle|default:'' }}" placeholder="t.me/…" />
+    </div>
+  </div>
+
+  <div class="ct-row">
+    <div class="ct-field">
+      <label for="channelLabel">Hero etiketi</label>
+      <input id="channelLabel" name="channelLabel" value="{{ form.channelLabel|default:'' }}" />
+    </div>
+    <div class="ct-field">
+      <label for="ctaLabel">Düymə mətni</label>
+      <input id="ctaLabel" name="ctaLabel" value="{{ form.ctaLabel|default:'' }}" />
+    </div>
+  </div>
+
+  <div class="ct-field">
+    <label for="headline">Başlıq</label>
+    <input id="headline" name="headline" value="{{ form.headline|default:'' }}" />
+  </div>
+
+  <div class="ct-field">
+    <label for="body">Əsas mətn</label>
+    <textarea id="body" name="body" class="body">{{ form.body|default:'' }}</textarea>
+    <p class="ct-hint">Paraqrafları boş sətirlə ayırın.</p>
+  </div>
+
+  <div class="ct-field">
+    <label for="pair">Cüt sətirlər (tətbiq · Telegram)</label>
+    <textarea id="pair" name="pair">{{ form.pair|default:'' }}</textarea>
+    <p class="ct-hint">Hər sətir ayrıca göstərilir.</p>
+  </div>
+
+  <div class="ct-row">
+    <div class="ct-field">
+      <label for="brand">Brend</label>
+      <input id="brand" name="brand" value="{{ form.brand|default:'' }}" />
+    </div>
+    <div class="ct-field">
+      <label for="author">Müəllif</label>
+      <input id="author" name="author" value="{{ form.author|default:'' }}" />
+    </div>
+  </div>
+
+  <div class="ct-field">
+    <label for="slogan">Şüar</label>
+    <input id="slogan" name="slogan" value="{{ form.slogan|default:'' }}" />
+  </div>
+
+  <div class="ct-field">
+    <label for="note">Qeyd</label>
+    <textarea id="note" name="note">{{ form.note|default:'' }}</textarea>
+  </div>
+
+  <div class="ct-actions">
+    <button type="submit" class="ct-btn">Yadda saxla</button>
+    {% if updated_at %}<span class="ct-meta">Son yeniləmə: {{ updated_at|date:"d.m.Y H:i" }}</span>{% endif %}
+  </div>
+</form>
+{% endblock %}

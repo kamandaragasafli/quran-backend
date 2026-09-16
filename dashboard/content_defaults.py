@@ -252,6 +252,39 @@ RECITERS_DEFAULT = {
 }
 
 
+TELEGRAM_DEFAULT = {
+    'url': 'https://t.me/mirasacademy_az114',
+    'handle': 't.me/mirasacademy_az114',
+    'channelLabel': 'Miras kanalı',
+    'headline': 'MİRAS — elmi məlumatın praktik tilavətlə tamamlandığı platforma',
+    'body': (
+        'Miras mobil tətbiqində Quran tilavətinin müxtəlif mərhələlərinə aid elmi və metodiki '
+        'qeydlər sistemli şəkildə təqdim olunur. Lakin tilavət yalnız oxumaqla mənimsənilən bir '
+        'sahə deyil. Bəzi incəliklər yazı ilə izah edilsə də, onların mahiyyəti eşidildikdə və '
+        'praktik nümunə üzərində göstərildikdə daha aydın anlaşılır.\n\n'
+        'Məhz bu məqsədlə Miras Telegram kanalı mobil tətbiqin praktik tamamlayıcısı olaraq '
+        'fəaliyyət göstərəcək.\n\n'
+        'Tətbiqdə yer alan vəqf və istinəf nöqtələri, məna vurğuları, səs idarəsi, sadə avaz, '
+        'təcvidin incəlikləri və hüsni-ədaya aid xüsusi qeydlər kanalda səsli nümunələr və '
+        'praktiki tətbiqlərlə nümayiş etdiriləcək.\n\n'
+        'Burada məqsəd yeni qaydalar toplusu yaratmaq deyil; öyrənilən elmin tilavətdə necə '
+        'tətbiq olunduğunu göstərməkdir.'
+    ),
+    'pair': (
+        'Mobil tətbiq — elmi istiqaməti göstərir.\n'
+        'Telegram — onun praktik əksini eşitdirir.'
+    ),
+    'brand': 'MİRAS',
+    'slogan': 'Oxumaq, anlamaq, eşitmək və tətbiq etmək.',
+    'note': (
+        'Bu variantda Telegram ayrıca layihə kimi deyil, mobil tətbiqin praktik təlim qolu '
+        'kimi təqdim olunur.'
+    ),
+    'author': 'Yunus Əlihüseynli',
+    'ctaLabel': 'Kanala keç',
+}
+
+
 def default_for(key: str) -> dict:
     if key == 'about':
         return dict(ABOUT_DEFAULT)
@@ -259,4 +292,6 @@ def default_for(key: str) -> dict:
         return dict(MEAL_INTRO_DEFAULT)
     if key == 'reciters':
         return dict(RECITERS_DEFAULT)
+    if key == 'telegram':
+        return dict(TELEGRAM_DEFAULT)
     return {}
