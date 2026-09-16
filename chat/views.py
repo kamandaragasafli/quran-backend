@@ -58,7 +58,7 @@ def meal_summaries(_request):
 
 def _build_word_marks_pack():
     ink_by_key: dict[str, dict] = {}
-    about_by_verse: dict[str, dict] = {}
+    about_notes: list[dict] = []
     latest = None
     rows = list(WordMarkNote.objects.all().order_by('id'))
     for note in rows:
@@ -68,10 +68,10 @@ def _build_word_marks_pack():
             key = f"{mark['verseKey']}:{mark['position']}"
             ink_by_key[key] = mark
         for about in note.to_about_notes():
-            about_by_verse[about['verseKey']] = about
+            about_notes.append({**about, 'noteId': note.pk})
     return {
         'ink_marks': list(ink_by_key.values()),
-        'about_notes': list(about_by_verse.values()),
+        'about_notes': about_notes,
         'updated_at': latest.isoformat() if latest else None,
     }
 

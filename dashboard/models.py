@@ -190,34 +190,23 @@ class WordMarkNote(models.Model):
 
         if self.kind == self.KIND_QIRAAT:
             body = (self.waqf_note or '').strip()
-            first = items[0]
-            last = items[-1]
-            lemma = ' '.join(w['text'] for w in items if w['text']) or first['verseKey']
+            lemma = ' '.join(w['text'] for w in items if w['text']) or items[0]['verseKey']
+            n = len(items)
+            # Tam seçim — ilk/son mavi, ortadakılar normal (etiket yox)
             examples = []
-            if len(items) == 1:
+            for i, w in enumerate(items):
+                text = (w.get('text') or '').strip()
+                if not text:
+                    continue
+                is_edge = n == 1 or i == 0 or i == n - 1
                 examples.append(
                     {
-                        'label': 'Qiraət qeydi',
-                        'arabic': first['text'] or lemma,
-                        'color': COLOR_QIRAAT,
+                        'label': '',
+                        'arabic': text,
+                        'color': COLOR_QIRAAT if is_edge else '',
                     }
                 )
-            else:
-                examples.append(
-                    {
-                        'label': 'Qiraət · başlanğıc',
-                        'arabic': first['text'] or lemma,
-                        'color': COLOR_QIRAAT,
-                    }
-                )
-                examples.append(
-                    {
-                        'label': 'Qiraət · son',
-                        'arabic': last['text'] or lemma,
-                        'color': COLOR_QIRAAT,
-                    }
-                )
-            # Haqqında — seçimin əhatə etdiyi hər ayə üçün eyni body
+            # Haqqında — seçimin əhatə etdiyi hər ayə üçün eyni tam ifadə
             by_verse: dict[str, list[dict]] = {}
             for w in items:
                 by_verse.setdefault(w['verseKey'], []).append(w)
@@ -227,9 +216,10 @@ class WordMarkNote(models.Model):
                 notes.append(
                     {
                         'verseKey': vk,
-                        'lemma': verse_lemma,
+                        'lemma': lemma or verse_lemma,
                         'body': body,
                         'examples': examples,
+                        'positions': [w['position'] for w in words],
                     }
                 )
             return notes
@@ -320,6 +310,7 @@ class WordMarkNote(models.Model):
                     'lemma': lemma,
                     'body': body,
                     'examples': examples,
+                    'positions': [w['position'] for w in words],
                 }
             )
         return notes
