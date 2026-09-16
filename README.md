@@ -1,6 +1,6 @@
 # Quran backend (Django + SQLite)
 
-Expo (Tabyin) app və Miras dashboard üçün API: xülasələr, məshəf söz işarələri, qarilər.
+Expo (Miras) app və Miras dashboard üçün API: xülasələr, məshəf söz işarələri, qarilər.
 
 ## Qurulum (lokal)
 

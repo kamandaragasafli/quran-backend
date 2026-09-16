@@ -967,7 +967,7 @@
   <div class="vp-modal" role="dialog" aria-modal="true" aria-labelledby="maTitle" id="maModal">
     <div class="vp-head">
       <div class="vp-head-main">
-        <h3 id="maTitle">Mə inkar ədatı</h3>
+        <h3 id="maTitle"><span dir="rtl">مَا</span> ədatı</h3>
         <p class="vp-sub" id="maMeta">—</p>
       </div>
       <button type="button" class="vp-close" id="maClose" aria-label="Bağla">×</button>
@@ -979,14 +979,8 @@
       </div>
       <div class="vp-body">
         <div class="vp-section is-waqf">
-          <h4>İnkar (نَفْي) · qırmızı</h4>
+          <h4><span dir="rtl">مَا</span> ədatı</h4>
           <p class="vp-sec-desc">Seçilmiş «مَا» Əzbər · hərəkəsiz səviyyədə qırmızı görünəcək.</p>
-          <textarea
-            class="vp-note-area"
-            id="maNote"
-            placeholder="İstəyə bağlı qeyd…"
-            rows="3"
-          ></textarea>
         </div>
       </div>
     </div>
@@ -1005,7 +999,7 @@
   <div class="vp-sel-meta" id="vpSelMeta"></div>
   <button type="button" class="vp-sel-open" id="vpSelOpen">Vəqf / İstinaf</button>
   <button type="button" class="vp-sel-qiraat" id="qqSelOpen">Qiraət Qeydi</button>
-  <button type="button" class="vp-sel-ma" id="maSelOpen" hidden>Mə inkar ədatı</button>
+  <button type="button" class="vp-sel-ma" id="maSelOpen" hidden><span dir="rtl">مَا</span> ədatı</button>
   <button type="button" class="vp-sel-delete" id="vpSelDelete" hidden>Sil</button>
 </div>
 {% endif %}
@@ -1033,7 +1027,6 @@
   var maBackdrop = document.getElementById('maBackdrop');
   var maMeta = document.getElementById('maMeta');
   var maArabic = document.getElementById('maArabic');
-  var maNote = document.getElementById('maNote');
   var maSaveBtn = document.getElementById('maSave');
   var maDeleteBtn = document.getElementById('maDelete');
   var wordGlyphs = Array.prototype.slice.call(
@@ -1444,7 +1437,6 @@
     }
     activeNoteId = noteIdForPicked();
     if (maMeta) maMeta.textContent = lastInfo.meta;
-    if (maNote) maNote.value = '';
     renderMaArabic(lastInfo);
     syncDeleteButtons();
     hideBubble();
@@ -1516,7 +1508,7 @@
       body: JSON.stringify({
         words: lastInfo.words,
         kind: 'ma_inkar',
-        note: maNote ? maNote.value : '',
+        note: '',
       }),
     })
       .then(function (r) {
