@@ -75,6 +75,8 @@ class SummaryNote(models.Model):
         indexes = [
             models.Index(fields=['surah', 'ayah']),
         ]
+        verbose_name = 'Xülasə'
+        verbose_name_plural = 'Xülasələr'
 
     def __str__(self):
         if self.scope == self.SCOPE_AYAH and self.ayah:
@@ -131,6 +133,8 @@ class WordMarkNote(models.Model):
 
     class Meta:
         ordering = ['-updated_at']
+        verbose_name = 'Söz rəngi / işarə'
+        verbose_name_plural = 'Söz rəngləri (vəqf · qiraət · مَا)'
 
     def __str__(self):
         keys = []
