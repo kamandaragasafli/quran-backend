@@ -88,7 +88,7 @@
   width: 68px;
   appearance: none;
   border: 1px solid var(--border);
-  background: #fff;
+  background: var(--card);
   border-radius: 10px;
   padding: 8px 6px;
   font: inherit;
@@ -116,8 +116,8 @@
 }
 .pq-page {
   width: min(100%, 560px);
-  background: #FFFCF5;
-  border: 1px solid rgba(28, 42, 58, 0.1);
+  background: var(--mushaf-page);
+  border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: 0 12px 36px var(--shadow);
   padding: 22px 26px 16px;
@@ -129,12 +129,12 @@
   text-align: center;
   margin-bottom: 14px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(28, 42, 58, 0.08);
+  border-bottom: 1px solid var(--border);
 }
 .pq-page-head .ar {
   font-family: "UthmanicHafs", "Traditional Arabic", serif;
   font-size: 22px;
-  color: #1A2430;
+  color: var(--mushaf-text);
   margin-bottom: 2px;
 }
 .pq-page-head .az {
@@ -168,14 +168,14 @@
   font-family: "UthmanicHafs", "Traditional Arabic", serif;
   font-size: 24px;
   line-height: 1.85;
-  color: #1A2430;
+  color: var(--mushaf-text);
   margin: 8px 0 14px;
 }
 .pq-flow {
   font-family: "UthmanicHafs", "Traditional Arabic", serif;
   font-size: 26px;
   line-height: 2.15;
-  color: #1A2430;
+  color: var(--mushaf-text);
   text-align: justify;
   text-align-last: center;
   hyphens: none;
@@ -211,8 +211,8 @@
   -webkit-text-fill-color: transparent;
   background-image: linear-gradient(
     to left,
-    #1A2430 0%,
-    #1A2430 36%,
+    var(--mushaf-text) 0%,
+    var(--mushaf-text) 36%,
     #E53935 36%,
     #E53935 100%
   );
@@ -251,7 +251,7 @@
 .pq-footer {
   margin-top: 16px;
   padding-top: 10px;
-  border-top: 1px solid rgba(28, 42, 58, 0.08);
+  border-top: 1px solid var(--border);
   text-align: center;
   font-size: 13px;
   font-weight: 700;
@@ -266,7 +266,7 @@
   padding: 4px;
   border-radius: 10px;
   background: #1C2A3A;
-  box-shadow: 0 10px 24px rgba(28, 42, 58, 0.28);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
   animation: vpIn .12s ease;
 }
 .vp-sel-bubble.open { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; max-width: min(92vw, 420px); }
@@ -293,7 +293,7 @@
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: rgba(28, 42, 58, 0.45);
+  background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(6px);
   align-items: center;
   justify-content: center;
@@ -305,10 +305,10 @@
   max-height: 88vh;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--card);
   border-radius: 20px;
-  border: 1px solid rgba(28, 42, 58, 0.08);
-  box-shadow: 0 20px 48px rgba(28, 42, 58, 0.22);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
   overflow: hidden;
   animation: vpIn .16s ease;
 }
@@ -322,14 +322,14 @@
   justify-content: space-between;
   gap: 12px;
   padding: 16px 18px 14px;
-  border-bottom: 1px solid rgba(28, 42, 58, 0.07);
+  border-bottom: 1px solid var(--border);
 }
 .vp-head h3 { margin: 0; font-size: 17px; font-weight: 800; }
 .vp-head .vp-sub { margin: 4px 0 0; font-size: 12px; color: var(--muted); font-weight: 600; }
 .vp-close {
   appearance: none;
   border: none;
-  background: rgba(28,42,58,.07);
+  background: rgba(232,238,245,.08);
   width: 30px; height: 30px;
   border-radius: 50%;
   cursor: pointer;
@@ -342,8 +342,8 @@
 .vp-arabic {
   padding: 14px;
   border-radius: 14px;
-  background: #fff;
-  border: 1px solid rgba(28,42,58,.1);
+  background: var(--card);
+  border: 1px solid var(--border);
   direction: rtl;
   text-align: center;
   font-family: "UthmanicHafs", "Traditional Arabic", serif;
@@ -367,7 +367,7 @@
   justify-content: flex-end;
   flex-wrap: wrap;
   padding: 12px 18px 16px;
-  border-top: 1px solid rgba(28, 42, 58, 0.07);
+  border-top: 1px solid var(--border);
 }
 .vp-actions button {
   appearance: none;

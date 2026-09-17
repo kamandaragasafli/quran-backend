@@ -173,7 +173,7 @@
   width: 68px;
   appearance: none;
   border: 1px solid var(--border);
-  background: #fff;
+  background: var(--card);
   border-radius: 10px;
   padding: 8px 6px;
   font: inherit;
@@ -214,8 +214,8 @@
 .mushaf-page {
   width: min(100%, 560px);
   max-width: 100%;
-  background: #FFFCF5;
-  border: 1px solid rgba(28, 42, 58, 0.1);
+  background: var(--mushaf-page);
+  border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: 0 12px 36px var(--shadow);
   padding: 22px 28px 18px;
@@ -227,11 +227,11 @@
   text-align: center;
   margin-bottom: 14px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(28, 42, 58, 0.08);
+  border-bottom: 1px solid var(--border);
 }
 .mushaf-header .ar {
   font-size: 18px;
-  color: #1A2430;
+  color: var(--mushaf-text);
   margin-bottom: 4px;
 }
 .mushaf-header .az {
@@ -259,7 +259,7 @@
 .mushaf-glyph {
   font-size: clamp(16px, 4.6vw, 24px);
   line-height: 2.4;
-  color: #1A2430;
+  color: var(--mushaf-text);
   display: inline-block;
   -webkit-user-select: none;
   user-select: none;
@@ -294,7 +294,7 @@
 .mushaf-glyph.is-ink-istinaf { color: #43A047 !important; }
 .mushaf-glyph.is-ink-qiraat { color: #1E88E5 !important; }
 .mushaf-glyph.is-ink-grad {
-  background: linear-gradient(90deg, #E53935 0%, #1A2430 48%, #43A047 100%);
+  background: linear-gradient(90deg, #E53935 0%, var(--mushaf-text) 48%, #43A047 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent !important;
@@ -302,7 +302,7 @@
 }
 .mushaf-glyph.is-ink-grad.is-picked {
   -webkit-text-fill-color: unset;
-  color: #1A2430 !important;
+  color: var(--mushaf-text) !important;
   background: rgba(43, 187, 173, 0.32) !important;
   -webkit-background-clip: unset;
   background-clip: unset;
@@ -316,7 +316,7 @@
   padding: 4px;
   border-radius: 10px;
   background: #1C2A3A;
-  box-shadow: 0 10px 24px rgba(28, 42, 58, 0.28);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
   animation: vpIn .12s ease;
 }
 .vp-sel-bubble.open { display: flex; gap: 2px; align-items: center; flex-wrap: wrap; max-width: min(92vw, 420px); }
@@ -354,7 +354,7 @@
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: rgba(28, 42, 58, 0.45);
+  background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(6px);
   align-items: center;
   justify-content: center;
@@ -366,10 +366,10 @@
   max-height: 88vh;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--card);
   border-radius: 20px;
-  border: 1px solid rgba(28, 42, 58, 0.08);
-  box-shadow: 0 20px 48px rgba(28, 42, 58, 0.22);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
   overflow: hidden;
   animation: vpIn .16s ease;
 }
@@ -384,7 +384,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 16px 18px 14px;
-  border-bottom: 1px solid rgba(28, 42, 58, 0.07);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 .vp-head-main { min-width: 0; flex: 1; }
@@ -420,8 +420,8 @@
   gap: 4px 10px;
   padding: 14px 14px 12px;
   border-radius: 14px;
-  background: #fff;
-  border: 1px solid rgba(28,42,58,.1);
+  background: var(--card);
+  border: 1px solid var(--border);
   direction: rtl;
   text-align: center;
   font-family: "Amiri", "Traditional Arabic", "Scheherazade New", serif;
@@ -434,12 +434,12 @@
   font-size: 26px;
   font-weight: 400;
   line-height: 1.7;
-  color: #1A2430;
+  color: var(--mushaf-text);
 }
 .vp-word.is-waqf    .vp-word-txt { color: #E53935; font-weight: 700; }
 .vp-word.is-istinaf .vp-word-txt { color: #43A047; font-weight: 700; }
 .vp-word.is-both    .vp-word-txt {
-  background: linear-gradient(90deg,#E53935 0%,#1A2430 48%,#43A047 100%);
+  background: linear-gradient(90deg,#E53935 0%,var(--mushaf-text) 48%,#43A047 100%);
   -webkit-background-clip: text; background-clip: text;
   color: transparent; -webkit-text-fill-color: transparent;
   font-weight: 700;
@@ -448,7 +448,7 @@
 .vp-close {
   appearance: none;
   border: none;
-  background: rgba(28,42,58,.07);
+  background: rgba(232,238,245,.08);
   width: 30px; height: 30px;
   border-radius: 50%;
   cursor: pointer;
@@ -459,7 +459,7 @@
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
 }
-.vp-close:hover { background: rgba(28,42,58,.13); color: var(--text); }
+.vp-close:hover { background: rgba(232,238,245,.1); color: var(--text); }
 /* body */
 .vp-body {
   padding: 14px 18px 6px;
@@ -511,7 +511,7 @@
   padding: 10px 12px;
   border-radius: 12px;
   border: 1.5px solid rgba(30,136,229,.28);
-  background: #fff;
+  background: var(--card);
   font: inherit;
   font-size: 13px;
   line-height: 1.45;
@@ -536,7 +536,7 @@
   font-weight: 700;
 }
 .vp-word.is-qiraat-mid .vp-word-txt {
-  color: #1A2430;
+  color: var(--mushaf-text);
   opacity: .72;
 }
 /* istiqamət seçimi */
@@ -549,7 +549,7 @@
 .vp-dir-btn {
   appearance: none;
   border: 1.5px solid var(--border);
-  background: #fff;
+  background: var(--card);
   border-radius: 12px;
   padding: 10px 8px;
   cursor: pointer;
@@ -598,8 +598,8 @@
   gap: 8px;
   align-items: center;
   padding: 12px 18px 16px;
-  border-top: 1px solid rgba(28, 42, 58, 0.07);
-  background: #fff;
+  border-top: 1px solid var(--border);
+  background: var(--card);
   flex-shrink: 0;
 }
 .vp-actions button {
@@ -620,10 +620,10 @@
 }
 .vp-btn-delete:hover { background: rgba(198,40,40,.15); }
 .vp-btn-cancel {
-  background: rgba(28,42,58,.06);
+  background: rgba(232,238,245,.06);
   color: var(--muted);
 }
-.vp-btn-cancel:hover { background: rgba(28,42,58,.1); color: var(--text); }
+.vp-btn-cancel:hover { background: rgba(232,238,245,.1); color: var(--text); }
 .vp-btn-save {
   flex: 1;
   background: linear-gradient(135deg, #7ED6C2, #2BBBAD);
@@ -636,7 +636,7 @@
 .mushaf-footer {
   margin-top: 14px;
   padding-top: 10px;
-  border-top: 1px solid rgba(28, 42, 58, 0.08);
+  border-top: 1px solid var(--border);
   text-align: center;
   font-size: 13px;
   font-weight: 700;

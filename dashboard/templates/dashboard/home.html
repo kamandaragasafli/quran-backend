@@ -6,42 +6,97 @@
 
 {% block content %}
 <div class="feature-grid" style="margin-bottom: 22px;">
-  <a class="feature-card wide g-last" href="{% url 'dash-summaries' %}">
-    <div>
-      <div style="opacity:.9;font-size:13px;font-weight:600;">İdarə paneli</div>
-      <h3>Xülasələr · Haqqında · Məal · Telegram · Qarilər</h3>
-      <p>Məzmunu buradan idarə edin</p>
+  <a class="feature-card g-quran" href="{% url 'dash-quran' %}">
+    <div class="feature-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        <path d="M8 7h8M8 11h5"/>
+      </svg>
     </div>
-    <div class="feature-icon">◈</div>
+    <div>
+      <h3>Quran</h3>
+      <p>Mədinə məshəfi</p>
+    </div>
+  </a>
+
+  <a class="feature-card g-hifz" href="{% url 'dash-plain-quran' %}">
+    <div class="feature-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        <path d="M9 8h6M9 12h4"/>
+      </svg>
+    </div>
+    <div>
+      <h3>Hərəkəsiz Quran</h3>
+      <p>Hərəkəsiz mətn</p>
+    </div>
   </a>
 
   <a class="feature-card g-meal" href="{% url 'dash-summaries' %}">
-    <div class="feature-icon">📘</div>
-    <h3>Xülasələr</h3>
+    <div class="feature-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <path d="M14 2v6h6M8 13h8M8 17h5"/>
+      </svg>
+    </div>
+    <div>
+      <h3>Xülasələr</h3>
+      <p>Surə və ayə</p>
+    </div>
   </a>
-  <a class="feature-card g-hifz" href="{% url 'dash-about' %}">
-    <div class="feature-icon">ℹ</div>
-    <h3>Haqqında</h3>
+
+  <a class="feature-card g-about" href="{% url 'dash-about' %}">
+    <div class="feature-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 10v6M12 7h.01"/>
+      </svg>
+    </div>
+    <div>
+      <h3>Haqqında</h3>
+      <p>Tətbiq məlumatı</p>
+    </div>
   </a>
-  <a class="feature-card g-quran" href="{% url 'dash-meal-intro' %}">
-    <div class="feature-icon">✎</div>
-    <h3>Məal giriş</h3>
+
+  <a class="feature-card g-meal-intro" href="{% url 'dash-meal-intro' %}">
+    <div class="feature-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"/>
+        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+      </svg>
+    </div>
+    <div>
+      <h3>Məal giriş</h3>
+      <p>Giriş mətni</p>
+    </div>
   </a>
+
   <a class="feature-card g-groups" href="{% url 'dash-telegram' %}">
-    <div class="feature-icon">✈</div>
-    <h3>Telegram</h3>
+    <div class="feature-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 2 11 13"/>
+        <path d="M22 2 15 22l-4-9-9-4 20-7z"/>
+      </svg>
+    </div>
+    <div>
+      <h3>Telegram</h3>
+      <p>Kanal və mətn</p>
+    </div>
   </a>
+
   <a class="feature-card g-reciters" href="{% url 'dash-reciters' %}">
-    <div class="feature-icon">🎤</div>
-    <h3>Qarilər</h3>
-  </a>
-  <a class="feature-card g-hifz" href="{% url 'dash-plain-quran' %}">
-    <div class="feature-icon">أ</div>
-    <h3>Hərəkəsiz Quran</h3>
-  </a>
-  <a class="feature-card g-quran" href="{% url 'dash-quran' %}">
-    <div class="feature-icon">☪</div>
-    <h3>Quran</h3>
+    <div class="feature-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/>
+      </svg>
+    </div>
+    <div>
+      <h3>Qarilər</h3>
+      <p>Qari məlumatları</p>
+    </div>
   </a>
 </div>
 {% endblock %}

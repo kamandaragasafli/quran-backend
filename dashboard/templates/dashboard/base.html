@@ -1,16 +1,62 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="az">
+<html lang="az" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
   <title>{% block title %}Miras{% endblock %} · Dashboard</title>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('miras-dash-theme');
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --bg: #E4EAF3;
-      --bg-soft: #F3F6FB;
+    :root, [data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #000000;
+      --bg-soft: #151A22;
+      --card: #12161D;
+      --text: #E8EEF5;
+      --muted: #8B9AAB;
+      --teal: #2BBBAD;
+      --teal-deep: #3DD4C6;
+      --green: #3ECF8E;
+      --blue: #5B9DFF;
+      --amber: #E8A84A;
+      --purple: #7C5CF0;
+      --cyan: #4A9BC7;
+      --border: rgba(232, 238, 245, 0.1);
+      --shadow: rgba(0, 0, 0, 0.45);
+      --sidebar-bg: rgba(10, 12, 16, 0.72);
+      --panel-bg: rgba(18, 22, 29, 0.88);
+      --input-bg: #151A22;
+      --input-border: rgba(232, 238, 245, 0.14);
+      --mushaf-page: #151A22;
+      --mushaf-text: #E8EEF5;
+      --sidebar-w: 280px;
+      --radius: 22px;
+      --bg-glow-1: transparent;
+      --bg-glow-2: transparent;
+      --g-home: linear-gradient(135deg, #3ECF8E 0%, #2BBBAD 48%, #5B9DFF 100%);
+      --g-summaries: linear-gradient(135deg, #8EC5FF, #5B9DFF);
+      --g-quran: linear-gradient(135deg, #7ED6C2, #2BBBAD);
+      --g-plain: linear-gradient(135deg, #F6C77A, #E8A84A);
+      --g-telegram: linear-gradient(135deg, #7EC8E3, #4A9BC7);
+      --g-reciters: linear-gradient(135deg, #A78BFA, #7C5CF0);
+      --g-about: linear-gradient(135deg, #F6C77A, #E8A84A);
+      --g-meal-intro: linear-gradient(135deg, #7ED6C2, #4A9BC7);
+    }
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg: #F3EDE3;
+      --bg-soft: #F3F4F6;
       --card: #FFFFFF;
       --text: #1C2A3A;
       --muted: #6B7C8F;
@@ -22,28 +68,31 @@
       --purple: #7C5CF0;
       --cyan: #4A9BC7;
       --border: rgba(28, 42, 58, 0.08);
-      --shadow: rgba(40, 70, 120, 0.12);
-      --sidebar-w: 280px;
-      --radius: 22px;
-      --g-home: linear-gradient(135deg, #3ECF8E 0%, #2BBBAD 48%, #5B9DFF 100%);
-      --g-summaries: linear-gradient(135deg, #8EC5FF, #5B9DFF);
-      --g-quran: linear-gradient(135deg, #7ED6C2, #2BBBAD);
-      --g-plain: linear-gradient(135deg, #F6C77A, #E8A84A);
-      --g-telegram: linear-gradient(135deg, #7EC8E3, #4A9BC7);
-      --g-reciters: linear-gradient(135deg, #A78BFA, #7C5CF0);
-      --g-about: linear-gradient(135deg, #F6C77A, #E8A84A);
-      --g-meal-intro: linear-gradient(135deg, #7ED6C2, #4A9BC7);
+      --shadow: rgba(28, 32, 40, 0.08);
+      --sidebar-bg: rgba(255, 255, 255, 0.72);
+      --panel-bg: rgba(255, 255, 255, 0.92);
+      --input-bg: #F7F8FA;
+      --input-border: #D7E3F4;
+      --mushaf-page: #FFFCF5;
+      --mushaf-text: #1A2430;
+      --bg-glow-1: transparent;
+      --bg-glow-2: transparent;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       min-height: 100vh;
       font-family: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
-      background:
-        radial-gradient(1200px 600px at 100% -10%, rgba(91, 157, 255, 0.18), transparent 55%),
-        radial-gradient(900px 500px at -10% 100%, rgba(43, 187, 173, 0.14), transparent 50%),
-        var(--bg);
+      background-color: var(--bg);
+      background-image: none;
       color: var(--text);
+    }
+    [data-theme="dark"] body,
+    :root:not([data-theme="light"]) body {
+      background-color: #000000;
+    }
+    [data-theme="light"] body {
+      background-color: #F3EDE3;
     }
     a { color: var(--blue); text-decoration: none; }
     a:hover { text-decoration: underline; }
@@ -55,53 +104,54 @@
     }
 
     .sidebar {
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(16px);
+      background: var(--sidebar-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       border-right: 1px solid var(--border);
-      padding: 26px 18px 18px;
+      padding: 22px 14px 16px;
       display: flex;
       flex-direction: column;
-      gap: 22px;
+      gap: 18px;
       position: sticky;
       top: 0;
       height: 100vh;
-      box-shadow: 8px 0 32px rgba(40, 70, 120, 0.08);
+      box-shadow: none;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .sidebar::-webkit-scrollbar { display: none; width: 0; height: 0; }
+    [data-theme="dark"] .sidebar {
+      box-shadow: 8px 0 32px rgba(0, 0, 0, 0.28);
     }
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 6px 8px 10px;
+      padding: 4px 8px 8px;
     }
     .brand-mark {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: var(--g-home);
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(145deg, rgba(43, 187, 173, 0.18), rgba(91, 157, 255, 0.16));
+      border: 1px solid rgba(43, 187, 173, 0.22);
       display: grid;
       place-items: center;
-      color: #fff;
-      font-weight: 800;
-      font-size: 20px;
-      box-shadow: 0 10px 24px rgba(43, 187, 173, 0.4);
+      color: #1F9A8F;
       flex-shrink: 0;
-      position: relative;
     }
-    .brand-mark::after {
-      content: "";
-      position: absolute;
-      inset: -3px;
-      border-radius: 50%;
-      background: var(--g-home);
-      opacity: 0.25;
-      z-index: -1;
-      filter: blur(6px);
+    .brand-mark svg { width: 22px; height: 22px; display: block; }
+    [data-theme="dark"] .brand-mark {
+      color: #3DD4C6;
+      background: linear-gradient(145deg, rgba(43, 187, 173, 0.2), rgba(91, 157, 255, 0.14));
+      border-color: rgba(61, 212, 198, 0.28);
     }
     .brand-text strong {
       display: block;
-      font-size: 22px;
+      font-size: 20px;
       letter-spacing: -0.03em;
       font-weight: 800;
+      color: var(--text);
     }
     .brand-text span {
       font-size: 12px;
@@ -112,76 +162,96 @@
     .nav {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 6px;
       flex: 1;
+      overflow-y: auto;
+      padding-right: 2px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
+    .nav::-webkit-scrollbar { display: none; width: 0; height: 0; }
     .nav a {
+      --nav-accent: var(--teal);
+      --nav-soft: rgba(43, 187, 173, 0.12);
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
-      border-radius: 18px;
+      gap: 11px;
+      padding: 10px 12px;
+      border-radius: 14px;
       color: var(--text);
       font-weight: 700;
-      font-size: 14px;
+      font-size: 13.5px;
       text-decoration: none;
-      background: var(--bg-soft);
+      background: transparent;
       border: 1px solid transparent;
-      box-shadow: 0 4px 14px rgba(40, 70, 120, 0.06);
-      transition: transform .15s ease, box-shadow .15s ease, background .15s ease, color .15s ease;
+      box-shadow: none;
+      transition: background .15s ease, border-color .15s ease, color .15s ease, transform .15s ease;
+      position: relative;
     }
     .nav a:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 20px rgba(40, 70, 120, 0.12);
+      background: rgba(28, 42, 58, 0.04);
       text-decoration: none;
-      border-color: rgba(91, 157, 255, 0.2);
+      border-color: rgba(28, 42, 58, 0.06);
+    }
+    [data-theme="dark"] .nav a:hover {
+      background: rgba(232, 238, 245, 0.05);
+      border-color: rgba(232, 238, 245, 0.06);
     }
     .nav-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
       display: grid;
       place-items: center;
-      background: rgba(28, 42, 58, 0.06);
-      color: var(--muted);
-      font-size: 15px;
+      background: var(--nav-soft);
+      color: var(--nav-accent);
       flex-shrink: 0;
       transition: background .15s, color .15s;
     }
+    .nav-icon svg {
+      width: 17px;
+      height: 17px;
+      display: block;
+    }
 
-    /* Active: full Miras gradient cards */
     .nav a.active {
-      color: #fff !important;
-      border-color: transparent;
-      box-shadow: 0 12px 28px rgba(40, 70, 120, 0.22);
-      transform: translateY(-1px);
+      color: var(--text) !important;
+      background: rgba(255, 255, 255, 0.78);
+      border-color: rgba(28, 42, 58, 0.08);
+      box-shadow: 0 6px 18px rgba(28, 32, 40, 0.06);
+    }
+    [data-theme="dark"] .nav a.active {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(232, 238, 245, 0.1);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+    .nav a.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 3px;
+      border-radius: 3px;
+      background: var(--nav-accent);
     }
     .nav a.active .nav-icon {
-      background: rgba(255, 255, 255, 0.28);
-      color: #fff;
+      background: var(--nav-soft);
+      color: var(--nav-accent);
     }
-    .nav a.nav-home.active { background: var(--g-home); }
-    .nav a.nav-summaries.active { background: var(--g-summaries); }
-    .nav a.nav-about.active { background: var(--g-about); }
-    .nav a.nav-meal-intro.active { background: var(--g-meal-intro); }
-    .nav a.nav-quran.active { background: var(--g-quran); }
-    .nav a.nav-plain.active { background: var(--g-plain); }
-    .nav a.nav-telegram.active { background: var(--g-telegram); }
-    .nav a.nav-reciters.active { background: var(--g-reciters); }
 
-    /* Idle accent strip on icon */
-    .nav a.nav-home:not(.active) .nav-icon { background: rgba(62, 207, 142, 0.16); color: #2BA56E; }
-    .nav a.nav-summaries:not(.active) .nav-icon { background: rgba(91, 157, 255, 0.16); color: #3A7AD9; }
-    .nav a.nav-about:not(.active) .nav-icon { background: rgba(232, 168, 74, 0.18); color: #C4842A; }
-    .nav a.nav-meal-intro:not(.active) .nav-icon { background: rgba(74, 155, 199, 0.16); color: #2F7FA8; }
-    .nav a.nav-quran:not(.active) .nav-icon { background: rgba(43, 187, 173, 0.16); color: #1F9A8F; }
-    .nav a.nav-plain:not(.active) .nav-icon { background: rgba(232, 168, 74, 0.18); color: #C4842A; }
-    .nav a.nav-telegram:not(.active) .nav-icon { background: rgba(74, 155, 199, 0.16); color: #2F7FA8; }
-    .nav a.nav-reciters:not(.active) .nav-icon { background: rgba(124, 92, 240, 0.14); color: #6A4FD8; }
+    .nav a.nav-home { --nav-accent: #2BA56E; --nav-soft: rgba(62, 207, 142, 0.14); }
+    .nav a.nav-quran { --nav-accent: #1F9A8F; --nav-soft: rgba(43, 187, 173, 0.14); }
+    .nav a.nav-plain { --nav-accent: #C4842A; --nav-soft: rgba(232, 168, 74, 0.16); }
+    .nav a.nav-summaries { --nav-accent: #3A7AD9; --nav-soft: rgba(91, 157, 255, 0.14); }
+    .nav a.nav-about { --nav-accent: #C4842A; --nav-soft: rgba(232, 168, 74, 0.14); }
+    .nav a.nav-meal-intro { --nav-accent: #2F7FA8; --nav-soft: rgba(74, 155, 199, 0.14); }
+    .nav a.nav-telegram { --nav-accent: #2AABEE; --nav-soft: rgba(42, 171, 238, 0.12); }
+    .nav a.nav-reciters { --nav-accent: #6A4FD8; --nav-soft: rgba(124, 92, 240, 0.12); }
 
     .sidebar-foot {
-      padding: 14px 12px 6px;
-      font-size: 12px;
+      padding: 12px 10px 4px;
+      font-size: 11px;
       color: var(--muted);
       border-top: 1px solid var(--border);
       font-weight: 600;
@@ -224,13 +294,39 @@
       gap: 8px;
       padding: 9px 14px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.9);
+      background: var(--panel-bg);
       border: 1px solid var(--border);
       box-shadow: 0 6px 18px var(--shadow);
       font-size: 13px;
       font-weight: 700;
       color: var(--muted);
     }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .theme-toggle {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      box-shadow: 0 6px 18px var(--shadow);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .theme-toggle:hover { border-color: rgba(91, 157, 255, 0.4); }
+    .theme-toggle .theme-ico { font-size: 15px; line-height: 1; }
+    [data-theme="dark"] .theme-toggle .label-dark { display: none; }
+    [data-theme="light"] .theme-toggle .label-light { display: none; }
     .dot {
       width: 8px;
       height: 8px;
@@ -281,7 +377,7 @@
     }
 
     .panel {
-      background: rgba(255,255,255,0.94);
+      background: var(--panel-bg);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 20px 22px;
@@ -306,65 +402,104 @@
     .feature-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
+      gap: 12px;
     }
     @media (min-width: 900px) {
-      .feature-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .feature-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
     }
     .feature-card {
+      --accent: var(--teal);
+      --accent-soft: rgba(43, 187, 173, 0.14);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 148px;
-      padding: 18px;
-      border-radius: var(--radius);
-      color: #fff;
+      gap: 18px;
+      min-height: 132px;
+      padding: 16px;
+      border-radius: 20px;
+      color: var(--text);
       text-decoration: none;
-      box-shadow: 0 14px 32px rgba(40, 70, 120, 0.18);
-      transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(28, 42, 58, 0.08);
+      box-shadow: 0 8px 24px rgba(28, 32, 40, 0.06);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 3px;
+      background: var(--accent);
+      border-radius: 3px 0 0 3px;
+      opacity: 0.9;
     }
     .feature-card:hover {
-      transform: translateY(-3px) scale(1.01);
-      filter: brightness(1.04);
-      box-shadow: 0 18px 40px rgba(40, 70, 120, 0.24);
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px rgba(28, 32, 40, 0.1);
+      border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+      background: rgba(255, 255, 255, 0.88);
       text-decoration: none;
-      color: #fff;
+      color: var(--text);
+    }
+    [data-theme="dark"] .feature-card {
+      background: rgba(22, 29, 39, 0.86);
+      border-color: rgba(232, 238, 245, 0.1);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+    }
+    [data-theme="dark"] .feature-card:hover {
+      background: rgba(28, 36, 48, 0.95);
+      border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38);
     }
     .feature-card.wide {
       grid-column: 1 / -1;
-      min-height: 118px;
+      min-height: 100px;
       flex-direction: row;
       align-items: center;
       gap: 16px;
     }
     .feature-icon {
-      width: 50px;
-      height: 50px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.28);
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
       display: grid;
       place-items: center;
-      font-size: 22px;
-      backdrop-filter: blur(4px);
+      background: var(--accent-soft);
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .feature-icon svg {
+      width: 22px;
+      height: 22px;
+      display: block;
     }
     .feature-card h3 {
-      margin: 16px 0 0;
-      font-size: 18px;
+      margin: 0;
+      font-size: 15px;
       font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
     }
-    .feature-card.wide h3 { margin: 0; }
+    .feature-card.wide h3 { margin: 0; font-size: 17px; }
     .feature-card p {
-      margin: 6px 0 0;
-      font-size: 13px;
-      opacity: 0.92;
-      font-weight: 500;
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      line-height: 1.35;
     }
-    .g-last { background: var(--g-home); }
-    .g-meal { background: var(--g-summaries); }
-    .g-quran { background: var(--g-quran); }
-    .g-hifz { background: linear-gradient(135deg, #F6C77A, #E8A84A); }
-    .g-reciters { background: var(--g-reciters); }
-    .g-groups { background: var(--g-telegram); }
+    .feature-card.g-quran { --accent: #1F9A8F; --accent-soft: rgba(43, 187, 173, 0.16); }
+    .feature-card.g-hifz { --accent: #C4842A; --accent-soft: rgba(232, 168, 74, 0.18); }
+    .feature-card.g-meal { --accent: #3A7AD9; --accent-soft: rgba(91, 157, 255, 0.16); }
+    .feature-card.g-about { --accent: #C4842A; --accent-soft: rgba(232, 168, 74, 0.16); }
+    .feature-card.g-meal-intro { --accent: #2F7FA8; --accent-soft: rgba(74, 155, 199, 0.16); }
+    .feature-card.g-groups { --accent: #2AABEE; --accent-soft: rgba(42, 171, 238, 0.14); }
+    .feature-card.g-reciters { --accent: #6A4FD8; --accent-soft: rgba(124, 92, 240, 0.14); }
+    .feature-card.g-last { --accent: #2BBBAD; --accent-soft: rgba(62, 207, 142, 0.14); }
 
     table {
       width: 100%;
@@ -390,11 +525,11 @@
       border-radius: 999px;
       font-size: 11px;
       font-weight: 700;
-      background: rgba(91, 157, 255, 0.16);
-      color: #3A7AD9;
+      background: rgba(91, 157, 255, 0.22);
+      color: #8EC5FF;
     }
     .badge.off {
-      background: rgba(107, 124, 143, 0.14);
+      background: rgba(139, 154, 171, 0.18);
       color: var(--muted);
     }
     .muted { color: var(--muted); }
@@ -439,6 +574,26 @@
 
     /* —— Mobile / drawer —— */
     @media (max-width: 900px) {
+      [data-theme="dark"] body,
+      :root:not([data-theme="light"]) body {
+        background-color: #0A0C10;
+        background-image:
+          linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.55)),
+          url("{% static 'dashboard/bg-dark.png' %}");
+        background-repeat: no-repeat;
+        background-position: top center;
+        background-size: cover;
+        background-attachment: scroll;
+      }
+      [data-theme="light"] body {
+        background-color: #FFFFFF;
+        background-image: url("{% static 'dashboard/bg-light.png' %}");
+        background-repeat: no-repeat;
+        background-position: top center;
+        background-size: cover;
+        background-attachment: scroll;
+      }
+
       .layout { grid-template-columns: 1fr; }
       .sidebar {
         position: fixed;
@@ -448,7 +603,7 @@
         z-index: 50;
         transform: translateX(-105%);
         transition: transform .22s ease;
-        box-shadow: 16px 0 40px rgba(15, 20, 27, 0.2);
+        box-shadow: 16px 0 40px rgba(0, 0, 0, 0.55);
         height: 100dvh;
         overflow-y: auto;
       }
@@ -457,7 +612,7 @@
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(28, 42, 58, 0.45);
+        background: rgba(0, 0, 0, 0.55);
         z-index: 45;
         backdrop-filter: blur(3px);
         border: 0;
@@ -501,9 +656,10 @@
         gap: 10px;
       }
       .feature-card {
-        min-height: 120px;
+        min-height: 118px;
         padding: 14px;
         border-radius: 18px;
+        gap: 14px;
       }
       .feature-card.wide {
         min-height: auto;
@@ -512,10 +668,11 @@
         gap: 12px;
         padding: 16px;
       }
-      .feature-card h3 { font-size: 15px; margin-top: 12px; }
+      .feature-card h3 { font-size: 14px; }
       .feature-card.wide h3 { margin: 0; font-size: 16px; }
       .feature-card.wide p { font-size: 12px; }
-      .feature-icon { width: 42px; height: 42px; font-size: 18px; }
+      .feature-icon { width: 40px; height: 40px; border-radius: 12px; }
+      .feature-icon svg { width: 20px; height: 20px; }
 
       .grid {
         grid-template-columns: 1fr;
@@ -535,9 +692,10 @@
 
     /* —— Small phones —— */
     @media (max-width: 480px) {
-      .feature-grid { grid-template-columns: 1fr; }
+      .feature-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
       .feature-card.wide { flex-direction: row; align-items: center; }
       .pill { display: none; }
+      .theme-toggle .theme-label { display: none; }
       .page-title { font-size: 20px; }
       .main { padding: 14px 12px 36px; }
     }
@@ -549,7 +707,13 @@
   <div class="layout">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
-        
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            <path d="M8 7h8M8 11h5"/>
+          </svg>
+        </div>
         <div class="brand-text">
           <strong>Miras</strong>
           <span>Dashboard</span>
@@ -558,28 +722,52 @@
 
       <nav class="nav">
         <a href="{% url 'dash-home' %}" class="nav-home {% if nav == 'home' %}active{% endif %}">
-          <span class="nav-icon">⌂</span> Ana
-        </a>
-        <a href="{% url 'dash-summaries' %}" class="nav-summaries {% if nav == 'summaries' %}active{% endif %}">
-          <span class="nav-icon">◈</span> Xülasələr
-        </a>
-        <a href="{% url 'dash-about' %}" class="nav-about {% if nav == 'about' %}active{% endif %}">
-          <span class="nav-icon">ℹ</span> Haqqında
-        </a>
-        <a href="{% url 'dash-meal-intro' %}" class="nav-meal-intro {% if nav == 'meal_intro' %}active{% endif %}">
-          <span class="nav-icon">✎</span> Məal giriş
-        </a>
-        <a href="{% url 'dash-telegram' %}" class="nav-telegram {% if nav == 'telegram' %}active{% endif %}">
-          <span class="nav-icon">✈</span> Telegram
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5z"/></svg>
+          </span>
+          Ana
         </a>
         <a href="{% url 'dash-quran' %}" class="nav-quran {% if nav == 'quran' %}active{% endif %}">
-          <span class="nav-icon">☪</span> Quran
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8M8 11h5"/></svg>
+          </span>
+          Quran
         </a>
         <a href="{% url 'dash-plain-quran' %}" class="nav-plain {% if nav == 'plain_quran' %}active{% endif %}">
-          <span class="nav-icon">أ</span> Hərəkəsiz
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 8h6M9 12h4"/></svg>
+          </span>
+          Hərəkəsiz
+        </a>
+        <a href="{% url 'dash-summaries' %}" class="nav-summaries {% if nav == 'summaries' %}active{% endif %}">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+          </span>
+          Xülasələr
+        </a>
+        <a href="{% url 'dash-about' %}" class="nav-about {% if nav == 'about' %}active{% endif %}">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7h.01"/></svg>
+          </span>
+          Haqqında
+        </a>
+        <a href="{% url 'dash-meal-intro' %}" class="nav-meal-intro {% if nav == 'meal_intro' %}active{% endif %}">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </span>
+          Məal giriş
+        </a>
+        <a href="{% url 'dash-telegram' %}" class="nav-telegram {% if nav == 'telegram' %}active{% endif %}">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+          </span>
+          Telegram
         </a>
         <a href="{% url 'dash-reciters' %}" class="nav-reciters {% if nav == 'reciters' %}active{% endif %}">
-          <span class="nav-icon">🎧</span> Qarilər
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/></svg>
+          </span>
+          Qarilər
         </a>
       </nav>
 
@@ -595,7 +783,19 @@
           <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
           <p class="page-sub">{% block page_sub %}{% endblock %}</p>
         </div>
-        <div class="pill"><span class="dot"></span> {% now "d.m.Y H:i" %}</div>
+        <div class="topbar-actions">
+          <button type="button" class="theme-toggle" id="themeToggle" aria-label="Tema dəyiş">
+            <span class="theme-ico" aria-hidden="true">
+              <span class="label-light">☀</span>
+              <span class="label-dark">☾</span>
+            </span>
+            <span class="theme-label">
+              <span class="label-light">Light</span>
+              <span class="label-dark">Dark</span>
+            </span>
+          </button>
+          <div class="pill"><span class="dot"></span> {% now "d.m.Y H:i" %}</div>
+        </div>
       </div>
 
       {% block content %}{% endblock %}
@@ -629,6 +829,21 @@
       window.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') close();
       });
+
+      var themeBtn = document.getElementById('themeToggle');
+      function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        try { localStorage.setItem('miras-dash-theme', theme); } catch (e) {}
+        if (themeBtn) {
+          themeBtn.setAttribute('aria-label', theme === 'dark' ? 'Light mode' : 'Dark mode');
+        }
+      }
+      if (themeBtn) {
+        themeBtn.addEventListener('click', function () {
+          var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+          applyTheme(cur === 'dark' ? 'light' : 'dark');
+        });
+      }
     })();
   </script>
   {% block extra_js %}{% endblock %}
