@@ -121,6 +121,30 @@ def strip_leading_bismillah(text: str) -> str:
     return BISMILLAH_RE.sub('', t).strip() or t
 
 
+def sanitize_for_uthmanic(text: str) -> str:
+    """App sanitizeArabicForMadinah — UthmanicHafs üçün."""
+    if not text:
+        return text
+    t = text
+    t = re.sub(r'[\u200E\u200F\u200B\u200C\u200D\uFEFF]', '', t)
+    t = t.replace('\u060C', ',').replace('\u061B', ';').replace('\u061F', '?')
+    t = (
+        t.replace('\u08F0', '\u064B')
+        .replace('\u08F1', '\u064C')
+        .replace('\u08F2', '\u064D')
+        .replace('\u08F3', '\u064F')
+    )
+    t = re.sub(r'[\u08A0-\u08FF]', '', t)
+    t = t.replace('\u06E1', '\u0652')
+    t = re.sub(r'[\u06D6-\u06ED]', '', t)
+    t = t.replace('\u0640', '')
+    t = t.replace('\u0670', '\u0627')
+    t = t.replace('\u0653', '')
+    t = re.sub(r'\u0627{2,}', '\u0627', t)
+    t = re.sub(r' {2,}', ' ', t)
+    return t.strip()
+
+
 def searchable_ayah_text(surah: int, ayah: int, raw: str) -> str | None:
     text = (raw or '').replace('\ufeff', '').strip()
     if not text:
@@ -130,6 +154,191 @@ def searchable_ayah_text(surah: int, ayah: int, raw: str) -> str | None:
         if not text:
             return None
     return text
+
+
+def strip_harakat_display(text: str) -> str:
+    """QCF söz mətnini hərəkəsiz göstərmək üçün."""
+    t = sanitize_for_uthmanic(text or '')
+    t = re.sub(r'[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]', '', t)
+    return re.sub(r' {2,}', ' ', t).strip()
+
+
+def _page_has_verse(page: dict | None, verse_key: str) -> bool:
+    if not page or not verse_key:
+        return False
+    for line in page.get('lines') or []:
+        for w in line.get('words') or []:
+            if w.get('verse_key') == verse_key:
+                return True
+    return False
+
+
+def prepare_plain_page(page_number: int) -> dict | None:
+    """QCF səhifəsi — hərəkəsiz sözlər (position saxlanır → ma_inkar API)."""
+    from . import mushaf as mushaf_lib
+
+    if page_number < 1 or page_number > mushaf_lib.PAGE_COUNT:
+        return None
+    page = mushaf_lib.prepare_page_view(page_number)
+    if not page:
+        return None
+
+    next_page = (
+        mushaf_lib.prepare_page_view(page_number + 1)
+        if page_number < mushaf_lib.PAGE_COUNT
+        else None
+    )
+
+    blocks: list[dict] = []
+    flow: list[dict] = []
+    primary_surah = 1
+    for s in page.get('surahs') or []:
+        try:
+            primary_surah = int(s.get('id') or primary_surah)
+            break
+        except (TypeError, ValueError):
+            pass
+
+    def flush_flow() -> None:
+        nonlocal flow
+        if not flow:
+            return
+        # Son ayə növbəti səhifədə davam edirsə end işarəsini gizlə
+        last_vk = ''
+        for tok in reversed(flow):
+            if tok.get('kind') == 'word':
+                last_vk = tok.get('verse_key') or ''
+                break
+        if last_vk and _page_has_verse(next_page, last_vk):
+            for tok in reversed(flow):
+                if tok.get('kind') == 'end' and tok.get('verse_key') == last_vk:
+                    tok['hidden'] = True
+                    break
+        blocks.append({'kind': 'flow', 'tokens': flow})
+        flow = []
+
+    for line in page.get('lines') or []:
+        for word in line.get('words') or []:
+            wtype = word.get('type') or 'word'
+            if wtype == 'surah_header':
+                sid = word.get('sura')
+                if not sid:
+                    for s in page.get('surahs') or []:
+                        if int(s.get('verse_start') or 0) == 1:
+                            sid = s.get('id')
+                            break
+                    if not sid and page.get('surahs'):
+                        sid = page['surahs'][0].get('id')
+                try:
+                    sid_i = int(sid)
+                except (TypeError, ValueError):
+                    continue
+                flush_flow()
+                blocks.append({'kind': 'header', 'surah_id': sid_i})
+                primary_surah = sid_i
+                continue
+
+            if wtype == 'bismillah':
+                flush_flow()
+                blocks.append(
+                    {
+                        'kind': 'bismillah',
+                        'text': strip_harakat_display(_bismillah_plain()),
+                    }
+                )
+                continue
+
+            key = word.get('verse_key') or ''
+            if wtype == 'end':
+                if not key:
+                    continue
+                try:
+                    ayah = int(key.split(':', 1)[1])
+                except (ValueError, IndexError):
+                    continue
+                flow.append(
+                    {
+                        'kind': 'end',
+                        'verse_key': key,
+                        'ayah': ayah,
+                        'hidden': False,
+                    }
+                )
+                continue
+
+            if wtype != 'word' or not key:
+                continue
+            try:
+                pos = int(word.get('position') or 0)
+            except (TypeError, ValueError):
+                pos = 0
+            if pos < 1:
+                continue
+            raw = (word.get('text') or '').strip()
+            display = strip_harakat_display(raw) or raw
+            if not display:
+                continue
+            try:
+                primary_surah = int(key.split(':', 1)[0])
+            except (ValueError, IndexError):
+                pass
+            flow.append(
+                {
+                    'kind': 'word',
+                    'verse_key': key,
+                    'position': pos,
+                    'text': raw,
+                    'display': display,
+                }
+            )
+
+    flush_flow()
+
+    catchword = None
+    if next_page:
+        for line in next_page.get('lines') or []:
+            for word in line.get('words') or []:
+                if (word.get('type') or 'word') != 'word':
+                    continue
+                raw = (word.get('text') or '').strip()
+                first = strip_harakat_display(raw)
+                if first:
+                    catchword = first.split()[0] if first.split() else first
+                break
+            if catchword:
+                break
+
+    has_words = any(
+        t.get('kind') == 'word'
+        for b in blocks
+        if b.get('kind') == 'flow'
+        for t in (b.get('tokens') or [])
+    )
+
+    return {
+        'page': page_number,
+        'primary_surah': primary_surah,
+        'surahs': page.get('surahs') or [],
+        'blocks': blocks,
+        'catchword': catchword,
+        'has_words': has_words,
+    }
+
+
+def tanzil_ayah_plain(surah: int, ayah: int) -> str | None:
+    """Hərəkəsiz ayə mətni (app plainAyahText ilə eyni qaydalar)."""
+    pack = load_tanzil()
+    arr = pack.get(str(surah)) or []
+    if ayah < 1 or ayah > len(arr):
+        return None
+    text = (arr[ayah - 1] or '').replace('\ufeff', '').strip()
+    if not text:
+        return None
+    if ayah == 1 and surah not in (1, 9):
+        text = strip_leading_bismillah(text)
+    if not text:
+        return None
+    return sanitize_for_uthmanic(text) or None
 
 
 def search_arabic_ayahs(

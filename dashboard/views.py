@@ -289,6 +289,58 @@ def mushaf_font(request, filename: str):
     return resp
 
 
+def plain_quran(request):
+    """Hərəkəsiz Quran — Mədinə səhifə düzümü (604 səhifə)."""
+    surahs = mushaf_lib.load_surah_meta()
+    page_count = mushaf_lib.PAGE_COUNT
+
+    page_num: int | None = None
+    surah_q = request.GET.get('surah')
+    page_q = request.GET.get('page')
+
+    if page_q not in (None, ''):
+        try:
+            page_num = int(page_q)
+        except (TypeError, ValueError):
+            page_num = None
+
+    if page_num is None and surah_q:
+        try:
+            page_num = mushaf_lib.surah_start_page(int(surah_q))
+        except (TypeError, ValueError):
+            page_num = None
+
+    if page_num is None:
+        page_num = 1
+
+    page_num = max(1, min(int(page_num), page_count))
+    plain = ar_search.prepare_plain_page(page_num)
+    current_surah_idx = mushaf_lib.page_to_surah_index(page_num)
+    current_surah = surahs[current_surah_idx] if surahs else None
+
+    # Bloklardakı surə başlıqları üçün adlar
+    surah_by_id = {int(s.get('id') or 0): s for s in surahs}
+    for block in (plain or {}).get('blocks') or []:
+        if block.get('kind') == 'header':
+            block['meta'] = surah_by_id.get(int(block.get('surah_id') or 0))
+
+    return render(
+        request,
+        'dashboard/plain_quran.html',
+        {
+            'nav': 'plain_quran',
+            'surahs': surahs,
+            'page_num': page_num,
+            'page_count': page_count,
+            'plain': plain,
+            'ready': plain is not None and bool(plain.get('has_words')),
+            'current_surah': current_surah,
+            'prev_page': page_num - 1 if page_num > 1 else None,
+            'next_page': page_num + 1 if page_num < page_count else None,
+        },
+    )
+
+
 def _flash_from_messages(request):
     from django.contrib import messages
 

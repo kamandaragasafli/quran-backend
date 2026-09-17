@@ -1,0 +1,948 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Hərəkəsiz Quran · Miras{% endblock %}
+{% block page_title %}Hərəkəsiz Quran{% endblock %}
+{% block page_sub %}Tanzil / Uthmanic · Mədinə səhifə · {{ page_count }} səhifə · مَا ədatı{% endblock %}
+
+{% block extra_css %}
+<style>
+@font-face {
+  font-family: "UthmanicHafs";
+  src: url("{% url 'dash-mushaf-font' 'UthmanicHafs.ttf' %}") format("truetype");
+  font-display: swap;
+}
+.mushaf-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px var(--shadow);
+}
+.mushaf-nav-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mushaf-nav-top select {
+  flex: 1;
+  min-width: 0;
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  border-radius: 12px;
+  padding: 11px 12px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+}
+.mushaf-meta {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.mushaf-nav-pager {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+.mushaf-nav-pager .btn-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  color: var(--text);
+  min-height: 42px;
+}
+.mushaf-nav-pager .btn-nav:hover { text-decoration: none; filter: brightness(0.98); }
+.mushaf-nav-pager .btn-nav.disabled { opacity: .4; pointer-events: none; }
+.mushaf-nav-pager .btn-next { justify-self: start; }
+.mushaf-nav-pager .btn-prev { justify-self: end; }
+.mushaf-page-jump {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+.mushaf-page-jump .page-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--muted);
+}
+.mushaf-page-jump input[type="number"] {
+  width: 68px;
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 6px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  box-sizing: border-box;
+}
+.mushaf-page-jump .btn-go {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--g-plain);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  min-height: 36px;
+}
+.mushaf-stage {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.pq-page {
+  width: min(100%, 560px);
+  background: #FFFCF5;
+  border: 1px solid rgba(28, 42, 58, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 12px 36px var(--shadow);
+  padding: 22px 26px 16px;
+  direction: rtl;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.pq-page-head {
+  text-align: center;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(28, 42, 58, 0.08);
+}
+.pq-page-head .ar {
+  font-family: "UthmanicHafs", "Traditional Arabic", serif;
+  font-size: 22px;
+  color: #1A2430;
+  margin-bottom: 2px;
+}
+.pq-page-head .az {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+  direction: ltr;
+}
+.pq-surah-header {
+  text-align: center;
+  margin: 18px 0 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(43, 187, 173, 0.1);
+  border: 1px solid rgba(43, 187, 173, 0.22);
+}
+.pq-surah-header .name-ar {
+  font-family: "UthmanicHafs", "Traditional Arabic", serif;
+  font-size: 28px;
+  color: #1F9A8F;
+}
+.pq-surah-header .name-az {
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  direction: ltr;
+}
+.pq-bismillah {
+  text-align: center;
+  font-family: "UthmanicHafs", "Traditional Arabic", serif;
+  font-size: 24px;
+  line-height: 1.85;
+  color: #1A2430;
+  margin: 8px 0 14px;
+}
+.pq-flow {
+  font-family: "UthmanicHafs", "Traditional Arabic", serif;
+  font-size: 26px;
+  line-height: 2.15;
+  color: #1A2430;
+  text-align: justify;
+  text-align-last: center;
+  hyphens: none;
+}
+.pq-word {
+  display: inline;
+  cursor: pointer;
+  border-radius: 4px;
+  touch-action: pan-y;
+}
+.pq-word:hover { background: rgba(43, 187, 173, 0.1); }
+.pq-word.is-picked {
+  background: rgba(43, 187, 173, 0.32) !important;
+  box-shadow: inset 0 0 0 1px rgba(43, 187, 173, 0.45);
+}
+.pq-word.is-picked-ma {
+  background: linear-gradient(
+    to left,
+    transparent 0%,
+    transparent 36%,
+    rgba(43, 187, 173, 0.4) 36%,
+    rgba(43, 187, 173, 0.4) 100%
+  ) !important;
+}
+.pq-word.is-ink-ma { color: #E53935 !important; font-weight: 600; }
+.pq-word.is-ink-ma.is-ma-compound {
+  font-weight: 600;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(
+    to left,
+    #1A2430 0%,
+    #1A2430 36%,
+    #E53935 36%,
+    #E53935 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.pq-ayah-mark {
+  display: inline-block;
+  min-width: 1.55em;
+  height: 1.55em;
+  margin: 0 0.12em;
+  padding: 0 0.15em;
+  border-radius: 50%;
+  border: 1.5px solid rgba(43, 187, 173, 0.5);
+  color: #1F9A8F;
+  font-size: 0.52em;
+  font-weight: 800;
+  line-height: 1.45em;
+  text-align: center;
+  vertical-align: middle;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  direction: ltr;
+}
+.pq-catch {
+  display: block;
+  text-align: left;
+  direction: rtl;
+  margin-top: 8px;
+  font-family: "UthmanicHafs", "Traditional Arabic", serif;
+  font-size: 20px;
+  color: #1F9A8F;
+  opacity: 0.78;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.pq-footer {
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(28, 42, 58, 0.08);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  direction: ltr;
+}
+
+.vp-sel-bubble {
+  display: none;
+  position: fixed;
+  z-index: 70;
+  padding: 4px;
+  border-radius: 10px;
+  background: #1C2A3A;
+  box-shadow: 0 10px 24px rgba(28, 42, 58, 0.28);
+  animation: vpIn .12s ease;
+}
+.vp-sel-bubble.open { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; max-width: min(92vw, 420px); }
+.vp-sel-bubble button {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+  background: transparent;
+  white-space: nowrap;
+}
+.vp-sel-bubble button:hover { background: rgba(255,255,255,0.12); }
+.vp-sel-bubble .vp-sel-ma { background: #C62828; }
+.vp-sel-bubble .vp-sel-ma:hover { background: #B71C1C; }
+.vp-sel-bubble .vp-sel-delete { background: #C62828; }
+.vp-sel-bubble .vp-sel-delete:hover { background: #B71C1C; }
+
+.vp-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(28, 42, 58, 0.45);
+  backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.vp-backdrop.open { display: flex; }
+.vp-modal {
+  width: min(100%, 540px);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid rgba(28, 42, 58, 0.08);
+  box-shadow: 0 20px 48px rgba(28, 42, 58, 0.22);
+  overflow: hidden;
+  animation: vpIn .16s ease;
+}
+@keyframes vpIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+.vp-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid rgba(28, 42, 58, 0.07);
+}
+.vp-head h3 { margin: 0; font-size: 17px; font-weight: 800; }
+.vp-head .vp-sub { margin: 4px 0 0; font-size: 12px; color: var(--muted); font-weight: 600; }
+.vp-close {
+  appearance: none;
+  border: none;
+  background: rgba(28,42,58,.07);
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.vp-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.vp-arabic-wrap { padding: 14px 18px 0; }
+.vp-arabic {
+  padding: 14px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(28,42,58,.1);
+  direction: rtl;
+  text-align: center;
+  font-family: "UthmanicHafs", "Traditional Arabic", serif;
+  font-size: 28px;
+  color: #E53935;
+}
+.vp-body { padding: 14px 18px 6px; }
+.vp-section {
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(229,57,53,.15);
+  border-left: 3px solid #E53935;
+  background: rgba(229,57,53,.04);
+}
+.vp-section h4 { margin: 0 0 4px; font-size: 13px; font-weight: 800; }
+.vp-sec-desc { margin: 0; font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.45; }
+.vp-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  padding: 12px 18px 16px;
+  border-top: 1px solid rgba(28, 42, 58, 0.07);
+}
+.vp-actions button {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 13px;
+}
+.vp-btn-cancel { background: var(--bg-soft); color: var(--text); }
+.vp-btn-save { color: #fff; }
+.vp-btn-delete { background: #C62828; color: #fff; margin-right: auto; }
+
+@media (max-width: 600px) {
+  .pq-flow { font-size: 22px; line-height: 2.05; }
+  .pq-page { padding: 16px 14px 12px; }
+  .mushaf-nav-pager {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "jump jump" "next prev";
+  }
+  .mushaf-page-jump { grid-area: jump; }
+  .mushaf-nav-pager .btn-next { grid-area: next; justify-self: stretch; }
+  .mushaf-nav-pager .btn-prev { grid-area: prev; justify-self: stretch; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<form class="mushaf-nav" method="get" action="{% url 'dash-plain-quran' %}">
+  <div class="mushaf-nav-top">
+    <select name="surah" aria-label="Surə"
+      onchange="window.location='{% url 'dash-plain-quran' %}?surah='+encodeURIComponent(this.value)">
+      {% for s in surahs %}
+      <option value="{{ s.id }}" {% if current_surah and current_surah.id == s.id %}selected{% endif %}>
+        {{ s.id }}. {{ s.nameAz }}
+      </option>
+      {% endfor %}
+    </select>
+    <span class="mushaf-meta">{{ page_num }} / {{ page_count }}</span>
+  </div>
+
+  <div class="mushaf-nav-pager">
+    {% if next_page %}
+    <a class="btn-nav btn-next" href="{% url 'dash-plain-quran' %}?page={{ next_page }}" title="Növbəti səhifə">← Sonra</a>
+    {% else %}
+    <span class="btn-nav btn-next disabled">← Sonra</span>
+    {% endif %}
+
+    <div class="mushaf-page-jump">
+      <label class="page-label" for="page_jump">Səhifə</label>
+      <input id="page_jump" type="number" name="page" min="1" max="{{ page_count }}" value="{{ page_num }}" />
+      <button type="submit" class="btn-go">Get</button>
+    </div>
+
+    {% if prev_page %}
+    <a class="btn-nav btn-prev" href="{% url 'dash-plain-quran' %}?page={{ prev_page }}" title="Əvvəlki səhifə">Əvvəl →</a>
+    {% else %}
+    <span class="btn-nav btn-prev disabled">Əvvəl →</span>
+    {% endif %}
+  </div>
+</form>
+
+{% if not ready %}
+<div class="panel">
+  <p class="empty">Hərəkəsiz səhifə yüklənmədi.</p>
+</div>
+{% else %}
+<div class="mushaf-stage">
+  <article class="pq-page" id="pqPage" aria-label="Hərəkəsiz səhifə {{ page_num }}">
+    {% if current_surah %}
+    <header class="pq-page-head">
+      {% if current_surah.nameAr %}<div class="ar">{{ current_surah.nameAr }}</div>{% endif %}
+      <div class="az">{{ current_surah.nameAz }} · Səhifə {{ page_num }}</div>
+    </header>
+    {% endif %}
+
+    {% for block in plain.blocks %}
+      {% if block.kind == 'header' %}
+        <div class="pq-surah-header">
+          {% if block.meta and block.meta.nameAr %}
+            <div class="name-ar">{{ block.meta.nameAr }}</div>
+          {% endif %}
+          {% if block.meta %}
+            <div class="name-az">{{ block.surah_id }}. {{ block.meta.nameAz }}</div>
+          {% else %}
+            <div class="name-az">Surə {{ block.surah_id }}</div>
+          {% endif %}
+        </div>
+      {% elif block.kind == 'bismillah' %}
+        <div class="pq-bismillah">{{ block.text }}</div>
+      {% elif block.kind == 'flow' %}
+        <div class="pq-flow">
+          {% for t in block.tokens %}
+            {% if t.kind == 'word' %}
+              <span
+                class="pq-word"
+                data-verse="{{ t.verse_key }}"
+                data-position="{{ t.position }}"
+                data-text="{{ t.text }}"
+                data-type="word"
+              >{{ t.display }}</span>{% if not forloop.last %} {% endif %}
+            {% elif t.kind == 'end' and not t.hidden %}
+              <span class="pq-ayah-mark" title="{{ t.verse_key }}">{{ t.ayah }}</span>
+            {% endif %}
+          {% endfor %}
+          {% if forloop.last and plain.catchword %}
+            <span class="pq-catch">{{ plain.catchword }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    <footer class="pq-footer">Səhifə {{ page_num }} / {{ page_count }}</footer>
+  </article>
+</div>
+
+<div class="vp-backdrop" id="maBackdrop" aria-hidden="true">
+  <div class="vp-modal" role="dialog" aria-modal="true" aria-labelledby="maTitle">
+    <div class="vp-head">
+      <div>
+        <h3 id="maTitle"><span dir="rtl">مَا</span> ədatı</h3>
+        <p class="vp-sub" id="maMeta">—</p>
+      </div>
+      <button type="button" class="vp-close" id="maClose" aria-label="Bağla">×</button>
+    </div>
+    <div class="vp-scroll">
+      <div class="vp-arabic-wrap">
+        <div class="vp-arabic" id="maArabic" dir="rtl"></div>
+      </div>
+      <div class="vp-body">
+        <div class="vp-section">
+          <h4><span dir="rtl">مَا</span> ədatı</h4>
+          <p class="vp-sec-desc">Seçilmiş «مَا» Əzbər · hərəkəsiz səviyyədə qırmızı görünəcək.</p>
+        </div>
+      </div>
+    </div>
+    <div class="vp-actions">
+      <button type="button" class="vp-btn-delete" id="maDelete" hidden>🗑 Sil</button>
+      <button type="button" class="vp-btn-cancel" id="maCancel">Bağla</button>
+      <button type="button" class="vp-btn-save" id="maSave" style="background:#C62828;">Yadda saxla</button>
+    </div>
+  </div>
+</div>
+
+<div class="vp-sel-bubble" id="vpSelBubble" aria-hidden="true">
+  <button type="button" class="vp-sel-ma" id="maSelOpen" hidden><span dir="rtl">مَا</span> ədatı</button>
+  <button type="button" class="vp-sel-delete" id="vpSelDelete" hidden>Sil</button>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if ready %}
+<script>
+(function () {
+  var page = document.getElementById('pqPage');
+  if (!page) return;
+  var bubble = document.getElementById('vpSelBubble');
+  var maBackdrop = document.getElementById('maBackdrop');
+  var maMeta = document.getElementById('maMeta');
+  var maArabic = document.getElementById('maArabic');
+  var maSaveBtn = document.getElementById('maSave');
+  var maDeleteBtn = document.getElementById('maDelete');
+  var selDeleteBtn = document.getElementById('vpSelDelete');
+  var wordGlyphs = Array.prototype.slice.call(page.querySelectorAll('.pq-word'));
+  var inkLookup = {};
+  var lastInfo = null;
+  var activeNoteId = null;
+  var picked = [];
+  var dragAnchor = -1;
+  var dragging = false;
+
+  function hideBubble() {
+    bubble.classList.remove('open');
+    bubble.setAttribute('aria-hidden', 'true');
+  }
+
+  function glyphIndex(el) { return wordGlyphs.indexOf(el); }
+
+  function wordGlyphFromEvent(e) {
+    var t = e.target;
+    if (!t || !t.closest) return null;
+    var g = t.closest('.pq-word');
+    if (!g || !page.contains(g)) return null;
+    return g;
+  }
+
+  function clearPickVisual() {
+    wordGlyphs.forEach(function (g) {
+      g.classList.remove('is-picked', 'is-picked-ma');
+      g.removeAttribute('data-pick-ma');
+    });
+  }
+
+  function foldMaText(s) {
+    return String(s || '')
+      .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, '')
+      .trim();
+  }
+
+  function isMaCompoundWord(text) {
+    var t = foldMaText(text);
+    if (!t || t === 'ما') return false;
+    return /^(و|ف|ب|ل|ك)ما$/.test(t) || (t.length <= 5 && t.endsWith('ما') && t !== 'ما');
+  }
+
+  function extractMaCore(text) {
+    if (!isMaCompoundWord(text) && foldMaText(text) !== 'ما') {
+      return (text || '').trim() || 'مَا';
+    }
+    var m = String(text || '').match(/م[\u064B-\u065F\u0670]*ا/);
+    return m ? m[0] : 'مَا';
+  }
+
+  function selectionHasMa(info) {
+    var words = (info && info.words) || [];
+    for (var i = 0; i < words.length; i++) {
+      var t = foldMaText(words[i].text || '');
+      if (!t) continue;
+      if (t === 'ما' || t.endsWith('ما')) return true;
+    }
+    return false;
+  }
+
+  function infoFromGlyphs(list) {
+    if (!list.length) return null;
+    var words = [];
+    var texts = [];
+    var verses = [];
+    list.forEach(function (g) {
+      var t = (g.getAttribute('data-text') || '').trim();
+      var v = g.getAttribute('data-verse') || '';
+      var pos = parseInt(g.getAttribute('data-position') || '0', 10);
+      if (!v || !pos) return;
+      if (g.getAttribute('data-pick-ma') === '1') t = extractMaCore(t);
+      words.push({ verseKey: v, position: pos, text: t });
+      if (t) texts.push(t);
+      if (verses.indexOf(v) === -1) verses.push(v);
+    });
+    if (!words.length) return null;
+    return {
+      words: words,
+      verses: verses,
+      phrase: texts.join(' '),
+      meta: (verses.length === 1 ? verses[0] : verses[0] + ' – ' + verses[verses.length - 1]) +
+        (words.length > 1 ? ' · ' + words.length + ' söz' : ' · söz'),
+    };
+  }
+
+  function noteIdForPicked() {
+    var ids = {};
+    picked.forEach(function (g) {
+      var mark = inkLookup[(g.getAttribute('data-verse') || '') + ':' + (g.getAttribute('data-position') || '')];
+      if (mark && mark.noteId != null) ids[String(mark.noteId)] = true;
+    });
+    var keys = Object.keys(ids);
+    return keys.length === 1 ? parseInt(keys[0], 10) : null;
+  }
+
+  function syncDeleteButtons() {
+    var show = activeNoteId != null;
+    if (maDeleteBtn) {
+      maDeleteBtn.hidden = !show;
+      maDeleteBtn.disabled = false;
+      maDeleteBtn.textContent = 'Sil';
+    }
+    if (selDeleteBtn) selDeleteBtn.hidden = !show;
+  }
+
+  function syncMaButtonVisibility() {
+    var maBtn = document.getElementById('maSelOpen');
+    if (!maBtn) return;
+    maBtn.hidden = !selectionHasMa(lastInfo);
+  }
+
+  function placeBubbleNearPicked() {
+    if (!picked.length) { hideBubble(); return; }
+    syncMaButtonVisibility();
+    var left = Infinity, right = -Infinity, top = Infinity, bottom = -Infinity;
+    picked.forEach(function (g) {
+      var r = g.getBoundingClientRect();
+      left = Math.min(left, r.left);
+      right = Math.max(right, r.right);
+      top = Math.min(top, r.top);
+      bottom = Math.max(bottom, r.bottom);
+    });
+    bubble.classList.add('open');
+    bubble.setAttribute('aria-hidden', 'false');
+    bubble.style.visibility = 'hidden';
+    bubble.style.left = '0px';
+    bubble.style.top = '0px';
+    var bw = bubble.offsetWidth;
+    var bh = bubble.offsetHeight;
+    var cx = (left + right) / 2;
+    var bx = Math.max(8, Math.min(window.innerWidth - bw - 8, cx - bw / 2));
+    var by = top - bh - 8;
+    if (by < 8) by = bottom + 8;
+    bubble.style.left = bx + 'px';
+    bubble.style.top = by + 'px';
+    bubble.style.visibility = 'visible';
+  }
+
+  function applyPickRange(fromIdx, toIdx, opts) {
+    opts = opts || {};
+    var a = Math.min(fromIdx, toIdx);
+    var b = Math.max(fromIdx, toIdx);
+    picked = wordGlyphs.slice(a, b + 1);
+    clearPickVisual();
+    picked.forEach(function (g) {
+      var maOnly = opts.maOnly && a === b && isMaCompoundWord(g.getAttribute('data-text') || '');
+      if (maOnly) {
+        g.setAttribute('data-pick-ma', '1');
+        g.classList.add('is-picked-ma');
+      } else {
+        g.classList.add('is-picked');
+      }
+    });
+    lastInfo = infoFromGlyphs(picked);
+    activeNoteId = noteIdForPicked();
+    syncDeleteButtons();
+    if (lastInfo && lastInfo.phrase) placeBubbleNearPicked();
+    else hideBubble();
+  }
+
+  function clearSelection() {
+    picked = [];
+    dragAnchor = -1;
+    dragging = false;
+    lastInfo = null;
+    activeNoteId = null;
+    clearPickVisual();
+    syncDeleteButtons();
+    hideBubble();
+  }
+
+  function clickPrefersMaPart(g, clientX) {
+    if (!g || !isMaCompoundWord(g.getAttribute('data-text') || '')) return false;
+    var r = g.getBoundingClientRect();
+    if (r.width < 4) return true;
+    return (clientX - r.left) / r.width < 0.62;
+  }
+
+  function pickSingleGlyph(idx, clientX) {
+    var g = wordGlyphs[idx];
+    applyPickRange(idx, idx, { maOnly: g && clickPrefersMaPart(g, clientX) });
+  }
+
+  function narrowSelectionToMa() {
+    if (!picked.length) return;
+    picked.forEach(function (g) {
+      var raw = g.getAttribute('data-text') || '';
+      if (!isMaCompoundWord(raw) && foldMaText(raw) !== 'ما') return;
+      g.classList.remove('is-picked');
+      g.setAttribute('data-pick-ma', '1');
+      g.classList.add('is-picked-ma');
+    });
+    lastInfo = infoFromGlyphs(picked);
+    syncDeleteButtons();
+  }
+
+  function paintInk() {
+    wordGlyphs.forEach(function (g) {
+      g.classList.remove('is-ink-ma', 'is-ma-compound');
+      g.style.removeProperty('color');
+      g.style.removeProperty('-webkit-text-fill-color');
+      g.style.removeProperty('background-image');
+      g.style.removeProperty('-webkit-background-clip');
+      g.style.removeProperty('background-clip');
+      var mark = inkLookup[(g.getAttribute('data-verse') || '') + ':' + (g.getAttribute('data-position') || '')];
+      if (!mark || mark.kind !== 'ma_inkar') return;
+      g.classList.add('is-ink-ma');
+      if (isMaCompoundWord(g.getAttribute('data-text') || '')) {
+        g.classList.add('is-ma-compound');
+      }
+    });
+  }
+
+  function applyPack(pack) {
+    inkLookup = {};
+    (pack.ink_marks || []).forEach(function (m) {
+      if (!m || !m.verseKey || !m.position) return;
+      if (m.kind && m.kind !== 'ma_inkar') return;
+      var noteId = m.noteId != null ? m.noteId : m.note_id;
+      inkLookup[m.verseKey + ':' + m.position] = {
+        kind: m.kind || 'ma_inkar',
+        noteId: noteId != null ? Number(noteId) : null,
+        text: m.text || '',
+      };
+    });
+    paintInk();
+  }
+
+  function loadMarks() {
+    fetch('/api/word-marks/', { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) { if (data) applyPack(data); })
+      .catch(function () {});
+  }
+
+  function openMaModal() {
+    if (!lastInfo) return;
+    narrowSelectionToMa();
+    lastInfo = infoFromGlyphs(picked);
+    if (maMeta) maMeta.textContent = lastInfo.meta || '—';
+    if (maArabic) maArabic.textContent = lastInfo.phrase || 'مَا';
+    hideBubble();
+    maBackdrop.classList.add('open');
+    maBackdrop.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeMaModal() {
+    maBackdrop.classList.remove('open');
+    maBackdrop.setAttribute('aria-hidden', 'true');
+  }
+
+  function deleteAnnotation() {
+    if (activeNoteId == null) return;
+    if (!confirm('Bu işarəni silmək istəyirsiniz?')) return;
+    var id = activeNoteId;
+    var btns = [maDeleteBtn, selDeleteBtn].filter(Boolean);
+    btns.forEach(function (b) { b.disabled = true; b.textContent = 'Silinir…'; });
+    fetch('/api/word-marks/' + id + '/', {
+      method: 'DELETE',
+      headers: { Accept: 'application/json' },
+    })
+      .then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok) throw new Error((data && data.error) || 'Xəta');
+          return data;
+        });
+      })
+      .then(function (data) {
+        applyPack(data);
+        closeMaModal();
+        clearSelection();
+      })
+      .catch(function (err) { alert(err.message || 'Silinmədi'); })
+      .finally(function () {
+        btns.forEach(function (b) { b.disabled = false; b.textContent = 'Sil'; });
+        syncDeleteButtons();
+      });
+  }
+
+  function saveMaAnnotation() {
+    if (!lastInfo || !lastInfo.words || !lastInfo.words.length) {
+      alert('Söz seçin');
+      return;
+    }
+    maSaveBtn.disabled = true;
+    maSaveBtn.textContent = 'Saxlanılır…';
+    fetch('/api/word-marks/', {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ words: lastInfo.words, kind: 'ma_inkar', note: '' }),
+    })
+      .then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok) throw new Error((data && data.error) || 'Xəta');
+          return data;
+        });
+      })
+      .then(function (data) {
+        applyPack(data);
+        closeMaModal();
+        clearSelection();
+      })
+      .catch(function (err) { alert(err.message || 'Saxlanılmadı'); })
+      .finally(function () {
+        maSaveBtn.disabled = false;
+        maSaveBtn.textContent = 'Yadda saxla';
+      });
+  }
+
+  var touchStartX = 0, touchStartY = 0, touchPending = false, touchArmed = false;
+
+  function isTouchLike(e) {
+    return e.pointerType === 'touch' || e.pointerType === 'pen';
+  }
+
+  page.addEventListener('pointerdown', function (e) {
+    if (maBackdrop.classList.contains('open')) return;
+    if (e.button != null && e.button !== 0) return;
+    var g = wordGlyphFromEvent(e);
+    if (!g) {
+      if (!bubble.contains(e.target)) clearSelection();
+      touchPending = false;
+      touchArmed = false;
+      dragging = false;
+      return;
+    }
+    var idx = glyphIndex(g);
+    if (idx < 0) return;
+
+    if (e.shiftKey && dragAnchor >= 0) {
+      e.preventDefault();
+      applyPickRange(dragAnchor, idx);
+      dragging = false;
+      touchPending = false;
+      touchArmed = false;
+      return;
+    }
+
+    if (isTouchLike(e)) {
+      touchStartX = e.clientX;
+      touchStartY = e.clientY;
+      touchPending = true;
+      touchArmed = false;
+      dragging = false;
+      dragAnchor = idx;
+      return;
+    }
+
+    e.preventDefault();
+    try { page.setPointerCapture(e.pointerId); } catch (err) {}
+    dragAnchor = idx;
+    dragging = true;
+    pickSingleGlyph(idx, e.clientX);
+  });
+
+  page.addEventListener('pointermove', function (e) {
+    if (touchPending && !touchArmed && isTouchLike(e)) {
+      var dx = e.clientX - touchStartX;
+      var dy = e.clientY - touchStartY;
+      var adx = Math.abs(dx);
+      var ady = Math.abs(dy);
+      if (ady > 10 && ady >= adx) {
+        touchPending = false;
+        return;
+      }
+      if (adx > 10 && adx > ady) {
+        touchArmed = true;
+        dragging = true;
+        e.preventDefault();
+        try { page.setPointerCapture(e.pointerId); } catch (err) {}
+        pickSingleGlyph(dragAnchor, touchStartX);
+      }
+      return;
+    }
+    if (!dragging) return;
+    e.preventDefault();
+    var g = wordGlyphFromEvent(e);
+    if (!g) {
+      var el = document.elementFromPoint(e.clientX, e.clientY);
+      g = el && el.closest ? el.closest('.pq-word') : null;
+    }
+    if (!g || !page.contains(g)) return;
+    var idx = glyphIndex(g);
+    if (idx < 0) return;
+    applyPickRange(dragAnchor, idx);
+  });
+
+  page.addEventListener('pointerup', function (e) {
+    if (touchPending && !touchArmed && isTouchLike(e)) {
+      pickSingleGlyph(dragAnchor, e.clientX);
+    }
+    touchPending = false;
+    touchArmed = false;
+    dragging = false;
+  });
+
+  page.addEventListener('pointercancel', function () {
+    touchPending = false;
+    touchArmed = false;
+    dragging = false;
+  });
+
+  document.getElementById('maSelOpen').addEventListener('click', openMaModal);
+  document.getElementById('maClose').addEventListener('click', closeMaModal);
+  document.getElementById('maCancel').addEventListener('click', closeMaModal);
+  maSaveBtn.addEventListener('click', saveMaAnnotation);
+  maDeleteBtn.addEventListener('click', deleteAnnotation);
+  selDeleteBtn.addEventListener('click', deleteAnnotation);
+  maBackdrop.addEventListener('click', function (e) {
+    if (e.target === maBackdrop) closeMaModal();
+  });
+
+  loadMarks();
+})();
+</script>
+{% endif %}
+{% endblock %}

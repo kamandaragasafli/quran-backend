@@ -290,37 +290,9 @@
   border-radius: 4px;
   box-shadow: inset 0 0 0 1px rgba(43, 187, 173, 0.45);
 }
-/* وَمَا / فَمَا… — yalnız «مَا» tərəfi (RTL-də sol) */
-.mushaf-glyph.is-picked-ma {
-  background: linear-gradient(
-    to left,
-    transparent 0%,
-    transparent 36%,
-    rgba(43, 187, 173, 0.4) 36%,
-    rgba(43, 187, 173, 0.4) 100%
-  ) !important;
-  border-radius: 4px;
-  box-shadow: none;
-}
 .mushaf-glyph.is-ink-waqf { color: #E53935 !important; }
 .mushaf-glyph.is-ink-istinaf { color: #43A047 !important; }
 .mushaf-glyph.is-ink-qiraat { color: #1E88E5 !important; }
-.mushaf-glyph.is-ink-ma { color: #E53935 !important; font-weight: 600; }
-/* Birləşmiş وَمَا glyph: yalnız مَا qırmızı */
-.mushaf-glyph.is-ink-ma.is-ma-compound {
-  font-weight: 600;
-  color: transparent !important;
-  -webkit-text-fill-color: transparent;
-  background-image: linear-gradient(
-    to left,
-    #1A2430 0%,
-    #1A2430 36%,
-    #E53935 36%,
-    #E53935 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-}
 .mushaf-glyph.is-ink-grad {
   background: linear-gradient(90deg, #E53935 0%, #1A2430 48%, #43A047 100%);
   -webkit-background-clip: text;
@@ -369,10 +341,6 @@
   background: #1E88E5;
 }
 .vp-sel-bubble .vp-sel-qiraat:hover { background: #1976D2; }
-.vp-sel-bubble .vp-sel-ma {
-  background: #C62828;
-}
-.vp-sel-bubble .vp-sel-ma:hover { background: #B71C1C; }
 .vp-sel-bubble .vp-sel-meta {
   display: none;
 }
@@ -989,44 +957,12 @@
   </div>
 </div>
 
-{# Mə inkar ədatı popup #}
-<div class="vp-backdrop" id="maBackdrop" aria-hidden="true">
-  <div class="vp-modal" role="dialog" aria-modal="true" aria-labelledby="maTitle" id="maModal">
-    <div class="vp-head">
-      <div class="vp-head-main">
-        <h3 id="maTitle"><span dir="rtl">مَا</span> ədatı</h3>
-        <p class="vp-sub" id="maMeta">—</p>
-      </div>
-      <button type="button" class="vp-close" id="maClose" aria-label="Bağla">×</button>
-    </div>
-
-    <div class="vp-scroll">
-      <div class="vp-arabic-wrap">
-        <div class="vp-arabic" id="maArabic" dir="rtl" style="color:#E53935;"></div>
-      </div>
-      <div class="vp-body">
-        <div class="vp-section is-waqf">
-          <h4><span dir="rtl">مَا</span> ədatı</h4>
-          <p class="vp-sec-desc">Seçilmiş «مَا» Əzbər · hərəkəsiz səviyyədə qırmızı görünəcək.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="vp-actions">
-      <button type="button" class="vp-btn-delete" id="maDelete" hidden>🗑 Sil</button>
-      <button type="button" class="vp-btn-cancel" id="maCancel">Bağla</button>
-      <button type="button" class="vp-btn-save" id="maSave" style="background:#C62828;">Yadda saxla</button>
-    </div>
-  </div>
-</div>
-
 {# Söz seçimi paneli #}
 <div class="vp-sel-bubble" id="vpSelBubble" aria-hidden="true">
   <div class="vp-sel-ar" id="vpSelAr" dir="rtl"></div>
   <div class="vp-sel-meta" id="vpSelMeta"></div>
   <button type="button" class="vp-sel-open" id="vpSelOpen">Vəqf / İstinaf</button>
   <button type="button" class="vp-sel-qiraat" id="qqSelOpen">Qiraət Qeydi</button>
-  <button type="button" class="vp-sel-ma" id="maSelOpen" hidden><span dir="rtl">مَا</span> ədatı</button>
   <button type="button" class="vp-sel-delete" id="vpSelDelete" hidden>Sil</button>
 </div>
 {% endif %}
@@ -1051,11 +987,6 @@
   var qqSaveBtn = document.getElementById('qqSave');
   var qqDeleteBtn = document.getElementById('qqDelete');
   var qqRuleHint = document.getElementById('qqRuleHint');
-  var maBackdrop = document.getElementById('maBackdrop');
-  var maMeta = document.getElementById('maMeta');
-  var maArabic = document.getElementById('maArabic');
-  var maSaveBtn = document.getElementById('maSave');
-  var maDeleteBtn = document.getElementById('maDelete');
   var wordGlyphs = Array.prototype.slice.call(
     document.querySelectorAll('.mushaf-glyph.is-tap[data-type="word"]')
   );
@@ -1099,25 +1030,17 @@
 
   function clearPickVisual() {
     allTapGlyphs.forEach(function (g) {
-      g.classList.remove('is-picked', 'is-picked-ma');
-      g.removeAttribute('data-pick-ma');
+      g.classList.remove('is-picked');
     });
   }
 
-  function applyPickRange(fromIdx, toIdx, opts) {
-    opts = opts || {};
+  function applyPickRange(fromIdx, toIdx) {
     var a = Math.min(fromIdx, toIdx);
     var b = Math.max(fromIdx, toIdx);
     picked = wordGlyphs.slice(a, b + 1);
     clearPickVisual();
     picked.forEach(function (g) {
-      var maOnly = opts.maOnly && a === b && isMaCompoundWord(g.getAttribute('data-text') || '');
-      if (maOnly) {
-        g.setAttribute('data-pick-ma', '1');
-        g.classList.add('is-picked-ma');
-      } else {
-        g.classList.add('is-picked');
-      }
+      g.classList.add('is-picked');
     });
     lastInfo = infoFromGlyphs(picked);
     activeNoteId = noteIdForPicked();
@@ -1151,11 +1074,6 @@
       qqDeleteBtn.disabled = false;
       qqDeleteBtn.textContent = 'Sil';
     }
-    if (maDeleteBtn) {
-      maDeleteBtn.hidden = !show;
-      maDeleteBtn.disabled = false;
-      maDeleteBtn.textContent = 'Sil';
-    }
     if (selDeleteBtn) selDeleteBtn.hidden = !show;
   }
 
@@ -1182,9 +1100,6 @@
       var v = g.getAttribute('data-verse') || '';
       var pos = parseInt(g.getAttribute('data-position') || '0', 10);
       if (!v || !pos) return;
-      if (g.getAttribute('data-pick-ma') === '1') {
-        t = extractMaCore(t);
-      }
       words.push({ verseKey: v, position: pos, text: t });
       if (t) texts.push(t);
       if (verses.indexOf(v) === -1) verses.push(v);
@@ -1211,85 +1126,11 @@
     return '1–3 ayə seçin, və ya 3-dən çox ayədə 3–6 söz (ilk və son mavi).';
   }
 
-  /** Hərəkəsizləşdir — «مَا» / «ما» yoxlaması üçün */
-  function foldMaText(s) {
-    return String(s || '')
-      .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, '')
-      .trim();
-  }
-
-  /** وَمَا / فَمَا / بِمَا… — QCF-də tək glyph */
-  function isMaCompoundWord(text) {
-    var t = foldMaText(text);
-    if (!t || t === 'ما') return false;
-    return /^(و|ف|ب|ل|ك)ما$/.test(t) || (t.length <= 4 && t.endsWith('ما') && t !== 'ما');
-  }
-
-  function extractMaCore(text) {
-    if (!isMaCompoundWord(text) && foldMaText(text) !== 'ما') {
-      return (text || '').trim() || 'مَا';
-    }
-    /* Orijinal hərəkəli «مَا» varsa saxla */
-    var m = String(text || '').match(/م[\u064B-\u065F\u0670]*ا/);
-    return m ? m[0] : 'مَا';
-  }
-
-  /** Seçilmiş sözlərdən ən azı biri «ما» (və ya وَمَا, فَمَا…) */
-  function selectionHasMa(info) {
-    var words = (info && info.words) || [];
-    for (var i = 0; i < words.length; i++) {
-      var t = foldMaText(words[i].text || '');
-      if (!t) continue;
-      if (t === 'ما' || t.endsWith('ما')) return true;
-    }
-    return false;
-  }
-
-  /** مَا ədatı üçün seçimi «مَا»yə daralt (وَ seçilməsin) */
-  function narrowSelectionToMa() {
-    if (!picked.length) return;
-    picked.forEach(function (g) {
-      var raw = g.getAttribute('data-text') || '';
-      if (!isMaCompoundWord(raw) && foldMaText(raw) !== 'ما') return;
-      g.classList.remove('is-picked');
-      g.setAttribute('data-pick-ma', '1');
-      g.classList.add('is-picked-ma');
-    });
-    lastInfo = infoFromGlyphs(picked);
-    syncDeleteButtons();
-  }
-
-  /**
-   * وَمَا glyph: RTL-də sağ tərəf و, sol tərəf مَا.
-   * Sol ~62% zonaya toxunanda yalnız مَا seçilir.
-   */
-  function clickPrefersMaPart(g, clientX) {
-    if (!g || !isMaCompoundWord(g.getAttribute('data-text') || '')) return false;
-    var r = g.getBoundingClientRect();
-    if (r.width < 4) return true;
-    var ratio = (clientX - r.left) / r.width;
-    return ratio < 0.62;
-  }
-
-  function pickSingleGlyph(idx, clientX) {
-    var g = wordGlyphs[idx];
-    var maOnly = g && clickPrefersMaPart(g, clientX);
-    applyPickRange(idx, idx, { maOnly: maOnly });
-  }
-
-  function syncMaButtonVisibility() {
-    var maBtn = document.getElementById('maSelOpen');
-    if (!maBtn) return;
-    var show = selectionHasMa(lastInfo);
-    maBtn.hidden = !show;
-  }
-
   function placeBubbleNearPicked() {
     if (!picked.length) {
       hideBubble();
       return;
     }
-    syncMaButtonVisibility();
     var left = Infinity;
     var right = -Infinity;
     var top = Infinity;
@@ -1347,8 +1188,6 @@
         'is-ink-waqf',
         'is-ink-istinaf',
         'is-ink-qiraat',
-        'is-ink-ma',
-        'is-ma-compound',
         'is-ink-grad'
       );
       g.style.removeProperty('color');
@@ -1361,12 +1200,8 @@
       var pos = g.getAttribute('data-position') || '';
       var mark = inkLookup[v + ':' + pos];
       if (!mark) return;
-      if (mark.kind === 'ma_inkar') {
-        g.classList.add('is-ink-ma');
-        if (isMaCompoundWord(g.getAttribute('data-text') || '')) {
-          g.classList.add('is-ma-compound');
-        }
-      } else if (mark.textGradient && mark.textGradient.length) {
+      if (mark.kind === 'ma_inkar') return; /* yalnız hərəkəsiz səhifədə */
+      if (mark.textGradient && mark.textGradient.length) {
         g.classList.add('is-ink-grad');
       } else if (mark.color === '#E53935') {
         g.classList.add('is-ink-waqf');
@@ -1442,7 +1277,6 @@
     syncDeleteButtons();
     hideBubble();
     closeQiraatModal();
-    closeMaModal();
     backdrop.classList.add('open');
     backdrop.setAttribute('aria-hidden', 'false');
   }
@@ -1491,7 +1325,6 @@
     syncDeleteButtons();
     hideBubble();
     closeModal();
-    closeMaModal();
     if (!qqBackdrop) return;
     qqBackdrop.classList.add('open');
     qqBackdrop.setAttribute('aria-hidden', 'false');
@@ -1503,59 +1336,11 @@
     qqBackdrop.setAttribute('aria-hidden', 'true');
   }
 
-  function renderMaArabic(info) {
-    if (!maArabic) return;
-    maArabic.innerHTML = '';
-    if (!info || !info.words || !info.words.length) {
-      maArabic.textContent = '—';
-      return;
-    }
-    info.words.forEach(function (w) {
-      var wrap = document.createElement('span');
-      wrap.className = 'vp-word is-waqf';
-      var txt = document.createElement('span');
-      txt.className = 'vp-word-txt';
-      txt.textContent = w.text || '';
-      wrap.appendChild(txt);
-      maArabic.appendChild(wrap);
-    });
-  }
-
-  function openMaModal() {
-    if (!lastInfo) lastInfo = infoFromGlyphs(picked);
-    if (!lastInfo) return;
-    if (!lastInfo.words || !lastInfo.words.length) {
-      alert('Söz seçin');
-      return;
-    }
-    narrowSelectionToMa();
-    if (!selectionHasMa(lastInfo)) {
-      alert('Yalnız «مَا» seçildikdə açılır');
-      return;
-    }
-    activeNoteId = noteIdForPicked();
-    if (maMeta) maMeta.textContent = lastInfo.meta;
-    renderMaArabic(lastInfo);
-    syncDeleteButtons();
-    hideBubble();
-    closeModal();
-    closeQiraatModal();
-    if (!maBackdrop) return;
-    maBackdrop.classList.add('open');
-    maBackdrop.setAttribute('aria-hidden', 'false');
-  }
-
-  function closeMaModal() {
-    if (!maBackdrop) return;
-    maBackdrop.classList.remove('open');
-    maBackdrop.setAttribute('aria-hidden', 'true');
-  }
-
   function deleteAnnotation() {
     if (activeNoteId == null) return;
     if (!confirm('Bu işarəni silmək istəyirsiniz?')) return;
     var id = activeNoteId;
-    var btns = [deleteBtn, qqDeleteBtn, maDeleteBtn].filter(Boolean);
+    var btns = [deleteBtn, qqDeleteBtn].filter(Boolean);
     btns.forEach(function (b) {
       b.disabled = true;
       b.textContent = 'Silinir…';
@@ -1574,7 +1359,6 @@
         applyPack(data);
         closeModal();
         closeQiraatModal();
-        closeMaModal();
         clearSelection();
       })
       .catch(function (err) {
@@ -1586,46 +1370,6 @@
           b.textContent = 'Sil';
         });
         syncDeleteButtons();
-      });
-  }
-
-  function saveMaAnnotation() {
-    if (!lastInfo || !lastInfo.words || !lastInfo.words.length) {
-      alert('Söz seçin');
-      return;
-    }
-    if (!maSaveBtn) return;
-    maSaveBtn.disabled = true;
-    maSaveBtn.textContent = 'Saxlanılır…';
-    fetch('/api/word-marks/', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        words: lastInfo.words,
-        kind: 'ma_inkar',
-        note: '',
-      }),
-    })
-      .then(function (r) {
-        return r.json().then(function (data) {
-          if (!r.ok) throw new Error((data && data.error) || 'Xəta');
-          return data;
-        });
-      })
-      .then(function (data) {
-        applyPack(data);
-        closeMaModal();
-        clearSelection();
-      })
-      .catch(function (err) {
-        alert(err.message || 'Saxlanılmadı');
-      })
-      .finally(function () {
-        maSaveBtn.disabled = false;
-        maSaveBtn.textContent = 'Yadda saxla';
       });
   }
 
@@ -1728,7 +1472,6 @@
     page.addEventListener('pointerdown', function (e) {
       if (backdrop.classList.contains('open')) return;
       if (qqBackdrop && qqBackdrop.classList.contains('open')) return;
-      if (maBackdrop && maBackdrop.classList.contains('open')) return;
       if (e.button != null && e.button !== 0) return;
       var g = wordGlyphFromEvent(e);
       if (!g) {
@@ -1766,7 +1509,7 @@
       try { page.setPointerCapture(e.pointerId); } catch (err) {}
       dragAnchor = idx;
       dragging = true;
-      pickSingleGlyph(idx, e.clientX);
+      applyPickRange(idx, idx);
     });
 
     page.addEventListener('pointermove', function (e) {
@@ -1815,7 +1558,7 @@
         var adx = Math.abs(e.clientX - touchStartX);
         var ady = Math.abs(e.clientY - touchStartY);
         if (adx < 10 && ady < 10) {
-          pickSingleGlyph(dragAnchor, e.clientX);
+          applyPickRange(dragAnchor, dragAnchor);
         }
       }
       touchPending = false;
@@ -1843,23 +1586,16 @@
   document.getElementById('vpSelOpen').addEventListener('click', openModal);
   var qqSelOpen = document.getElementById('qqSelOpen');
   if (qqSelOpen) qqSelOpen.addEventListener('click', openQiraatModal);
-  var maSelOpen = document.getElementById('maSelOpen');
-  if (maSelOpen) maSelOpen.addEventListener('click', openMaModal);
   document.getElementById('vpClose').addEventListener('click', closeModal);
   document.getElementById('vpCancel').addEventListener('click', closeModal);
   var qqClose = document.getElementById('qqClose');
   var qqCancel = document.getElementById('qqCancel');
   if (qqClose) qqClose.addEventListener('click', closeQiraatModal);
   if (qqCancel) qqCancel.addEventListener('click', closeQiraatModal);
-  var maClose = document.getElementById('maClose');
-  var maCancel = document.getElementById('maCancel');
-  if (maClose) maClose.addEventListener('click', closeMaModal);
-  if (maCancel) maCancel.addEventListener('click', closeMaModal);
   if (dirBtnIstinaf) dirBtnIstinaf.addEventListener('click', function () { setDirection('istinaf_first'); });
   if (dirBtnWaqf) dirBtnWaqf.addEventListener('click', function () { setDirection('waqf_first'); });
   if (deleteBtn) deleteBtn.addEventListener('click', deleteAnnotation);
   if (qqDeleteBtn) qqDeleteBtn.addEventListener('click', deleteAnnotation);
-  if (maDeleteBtn) maDeleteBtn.addEventListener('click', deleteAnnotation);
   if (selDeleteBtn) selDeleteBtn.addEventListener('click', deleteAnnotation);
   backdrop.addEventListener('click', function (e) {
     if (e.target === backdrop) closeModal();
@@ -1869,15 +1605,9 @@
       if (e.target === qqBackdrop) closeQiraatModal();
     });
   }
-  if (maBackdrop) {
-    maBackdrop.addEventListener('click', function (e) {
-      if (e.target === maBackdrop) closeMaModal();
-    });
-  }
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
-      if (maBackdrop && maBackdrop.classList.contains('open')) closeMaModal();
-      else if (qqBackdrop && qqBackdrop.classList.contains('open')) closeQiraatModal();
+      if (qqBackdrop && qqBackdrop.classList.contains('open')) closeQiraatModal();
       else if (backdrop.classList.contains('open')) closeModal();
       else clearSelection();
     }
@@ -1885,15 +1615,12 @@
       if (!lastInfo || !lastInfo.phrase) return;
       if (backdrop.classList.contains('open')) return;
       if (qqBackdrop && qqBackdrop.classList.contains('open')) return;
-      if (maBackdrop && maBackdrop.classList.contains('open')) return;
-      // copy event on page may not fire if focus elsewhere
       e.preventDefault();
       writeClipboard(lastInfo.phrase).catch(function () {});
     }
   });
   saveBtn.addEventListener('click', saveAnnotation);
   if (qqSaveBtn) qqSaveBtn.addEventListener('click', saveQiraatAnnotation);
-  if (maSaveBtn) maSaveBtn.addEventListener('click', saveMaAnnotation);
   window.addEventListener('scroll', function () {
     if (bubble.classList.contains('open') && picked.length) placeBubbleNearPicked();
   }, true);

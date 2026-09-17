@@ -10,5 +10,6 @@ urlpatterns = [
     path('telegram/', views.telegram_content, name='dash-telegram'),
     path('quran/', views.quran, name='dash-quran'),
     path('quran/fonts/<str:filename>', views.mushaf_font, name='dash-mushaf-font'),
+    path('harekesiz/', views.plain_quran, name='dash-plain-quran'),
     path('qariler/', views.reciters, name='dash-reciters'),
 ]
