@@ -105,8 +105,15 @@ TIME_ZONE = 'Asia/Baku'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = '/static/'
+STATIC_URL = os.environ.get('STATIC_URL', '').strip() or (
+    # Prod: /static/ tez-tez nginx-də boş alias → 404.
+    # /sf/ → birbaşa gunicorn + WhiteNoise (admin CSS işləyir).
+    '/sf/' if not DEBUG else '/static/'
+)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+# collectstatic olmasa belə admin/static tapsın (aşağı trafik OK)
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = DEBUG
 STORAGES = {
     'default': {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
@@ -149,10 +156,14 @@ QURAN_APP_DIR = Path(
 ).resolve()
 
 # —— Production hardening (Render / reverse proxy) ——
+# HTTP IP (məs. 164.90.165.24) üçün cookie Secure yalnız HTTPS-də.
+_use_https = os.environ.get('SECURE_SSL_REDIRECT', '0') in ('1', 'true', 'True') or any(
+    o.startswith('https://') for o in CSRF_TRUSTED_ORIGINS
+)
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = _use_https
+    CSRF_COOKIE_SECURE = _use_https
     SECURE_CONTENT_TYPE_NOSNIFF = True
     if os.environ.get('SECURE_SSL_REDIRECT', '0') in ('1', 'true', 'True'):
         SECURE_SSL_REDIRECT = True

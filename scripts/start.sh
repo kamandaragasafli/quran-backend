@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Render / production start — migrate, sonra gunicorn
+# Render / production start — static + migrate, sonra gunicorn
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+python manage.py collectstatic --noinput
 python manage.py migrate --noinput
 exec gunicorn config.wsgi:application \
   --bind "0.0.0.0:${PORT:-8000}" \

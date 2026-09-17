@@ -46,6 +46,22 @@ Yoxlama: `GET /api/health` → `mushaf.surah_count: 114`, `mushaf.pages_ok: true
 | GET/POST | `/api/word-marks/` | Söz rəngləri |
 | DELETE | `/api/word-marks/<id>/` | İşarə sil |
 
+## Deploy (VPS / nginx)
+
+Admin CSS 404 olursa nginx `/static/`-i boş qovluğa verir. Kodda prod `STATIC_URL=/sf/` + WhiteNoise.
+
+```bash
+cd /path/to/quran-backend
+git pull
+source .venv/bin/activate   # və ya öz venv
+python manage.py collectstatic --noinput
+python manage.py migrate --noinput
+# gunicorn / systemd restart, məs:
+sudo systemctl restart miras   # xidmət adını özünə uyğunlaşdır
+```
+
+Nginx nümunəsi: `deploy/nginx-miras.conf` — `/static/` üçün boş `alias` olmamalıdır.
+
 ## Deploy (Render)
 
 Root Directory: `quran-backend`. Persistent Disk + `DATA_DIR=/var/data`. Ətraflı: `render.yaml`.
