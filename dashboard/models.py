@@ -257,6 +257,10 @@ class WordMarkNote(models.Model):
         if not items:
             return []
 
+        # Vəqf / istinaf — tətbiqdə yalnız rəng; «Haqqında» yalnız qiraət üçün
+        if self.kind == self.KIND_WAQF_ISTINAF:
+            return []
+
         if self.kind == self.KIND_MA_INKAR:
             body = (self.waqf_note or '').strip()
             by_verse: dict[str, list[dict]] = {}
@@ -320,97 +324,9 @@ class WordMarkNote(models.Model):
                         'body': body,
                         'examples': examples,
                         'positions': [w['position'] for w in words],
+                        'kind': self.KIND_QIRAAT,
                     }
                 )
             return notes
 
-        waqf = (self.waqf_note or '').strip()
-        istinaf = (self.istinaf_note or '').strip()
-        has_w = bool(waqf)
-        has_i = bool(istinaf)
-        # Qeyd istəyə bağlı — boş olsa da Haqqında göstərilsin
-        if not has_w and not has_i:
-            has_w = True
-            has_i = True
-
-        body_parts = []
-        if waqf:
-            body_parts.append(waqf)
-        if istinaf:
-            body_parts.append(istinaf)
-        body = '\n\n'.join(body_parts)
-
-        by_verse: dict[str, list[dict]] = {}
-        for w in items:
-            by_verse.setdefault(w['verseKey'], []).append(w)
-
-        notes = []
-        for vk, words in by_verse.items():
-            lemma = ' '.join(w['text'] for w in words if w['text']) or vk
-            n = len(words)
-            examples = []
-            if n >= 2 and has_w and has_i:
-                first = words[0]['text'] or lemma
-                last = words[-1]['text'] or lemma
-                examples.append(
-                    {
-                        'label': 'İstināf',
-                        'arabic': first,
-                        'color': COLOR_ISTINAF,
-                        'icon': 'play-back',
-                    }
-                )
-                examples.append(
-                    {
-                        'label': 'Vəqf',
-                        'arabic': last,
-                        'color': COLOR_WAQF,
-                        'icon': 'stop',
-                    }
-                )
-            elif has_w and has_i:
-                examples.append(
-                    {
-                        'label': 'Vəqf halında',
-                        'arabic': lemma,
-                        'color': COLOR_WAQF,
-                        'icon': 'stop',
-                    }
-                )
-                examples.append(
-                    {
-                        'label': 'İstināf halında',
-                        'arabic': lemma,
-                        'color': COLOR_ISTINAF,
-                        'icon': 'play-back',
-                    }
-                )
-            elif has_w:
-                examples.append(
-                    {
-                        'label': 'Vəqf',
-                        'arabic': lemma,
-                        'color': COLOR_WAQF,
-                        'icon': 'stop',
-                    }
-                )
-            else:
-                examples.append(
-                    {
-                        'label': 'İstināf',
-                        'arabic': lemma,
-                        'color': COLOR_ISTINAF,
-                        'icon': 'play-back',
-                    }
-                )
-
-            notes.append(
-                {
-                    'verseKey': vk,
-                    'lemma': lemma,
-                    'body': body,
-                    'examples': examples,
-                    'positions': [w['position'] for w in words],
-                }
-            )
-        return notes
+        return []
