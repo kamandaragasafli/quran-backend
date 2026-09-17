@@ -105,13 +105,9 @@ TIME_ZONE = 'Asia/Baku'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = os.environ.get('STATIC_URL', '').strip() or (
-    # Prod: /static/ tez-tez nginx-də boş alias → 404.
-    # /sf/ → birbaşa gunicorn + WhiteNoise (admin CSS işləyir).
-    '/sf/' if not DEBUG else '/static/'
-)
+STATIC_URL = os.environ.get('STATIC_URL', '/static/').strip() or '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-# collectstatic olmasa belə admin/static tapsın (aşağı trafik OK)
+# collectstatic boşdursa admin CSS tapılsın (WhiteNoise ehtiyat)
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = DEBUG
 STORAGES = {
@@ -145,6 +141,8 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
+    # Session auth yox — admin cookie + CSRF dashboard fetch-i pozmasın
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
     'UNAUTHENTICATED_USER': None,
 }
 

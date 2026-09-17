@@ -599,9 +599,10 @@
       var v = g.getAttribute('data-verse') || '';
       var pos = parseInt(g.getAttribute('data-position') || '0', 10);
       if (!v || !pos) return;
-      if (g.getAttribute('data-pick-ma') === '1') t = extractMaCore(t);
+      /* Tam söz saxla (وما / فما) — yalnız «ما» yazsa bütün *ما boyanırdı */
       words.push({ verseKey: v, position: pos, text: t });
-      if (t) texts.push(t);
+      var shown = g.getAttribute('data-pick-ma') === '1' ? extractMaCore(t) : t;
+      if (shown) texts.push(shown);
       if (verses.indexOf(v) === -1) verses.push(v);
     });
     if (!words.length) return null;
@@ -819,10 +820,16 @@
       method: 'POST',
       headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
       body: JSON.stringify({ words: lastInfo.words, kind: 'ma_inkar', note: '' }),
+      credentials: 'same-origin',
     })
       .then(function (r) {
-        return r.json().then(function (data) {
-          if (!r.ok) throw new Error((data && data.error) || 'Xəta');
+        return r.text().then(function (raw) {
+          var data = null;
+          try { data = raw ? JSON.parse(raw) : null; } catch (e) { /* ignore */ }
+          if (!r.ok) {
+            var msg = (data && (data.error || data.detail)) || ('Xəta ' + r.status);
+            throw new Error(msg);
+          }
           return data;
         });
       })
