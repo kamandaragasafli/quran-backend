@@ -2,7 +2,7 @@
 
 {% block title %}{{ mushaf_title|default:"Quran" }} · Miras{% endblock %}
 {% block page_title %}{{ mushaf_title|default:"Quran" }}{% endblock %}
-{% block page_sub %}QCF4 Mədinə məshəfi · {{ page_count }} səhifə{% endblock %}
+{% block page_sub %}{% endblock %}
 
 {% block extra_css %}
 {% if preload_fonts %}
@@ -23,49 +23,73 @@
 {% endfor %}
 {% endif %}
 .mushaf-filters {
-  display: grid;
-  grid-template-columns: 100px minmax(0, 1fr) auto;
-  gap: 10px;
-  align-items: end;
-  margin-bottom: 10px;
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 0;
 }
-.mushaf-filters label {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  margin-bottom: 6px;
+.mushaf-search-bar {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  border-radius: 14px;
+  padding: 4px 6px 4px 14px;
+  transition: border-color .15s, box-shadow .15s;
 }
-.mushaf-filters input {
+.mushaf-search-bar:focus-within {
+  border-color: rgba(91, 157, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(91, 157, 255, 0.18);
+}
+.mushaf-search-bar input {
+  flex: 1;
+  min-width: 0;
   width: 100%;
   box-sizing: border-box;
   appearance: none;
-  border: 1px solid var(--border);
-  background: var(--bg-soft);
-  border-radius: 12px;
-  padding: 11px 12px;
+  border: none;
+  background: transparent;
+  padding: 10px 4px;
   font: inherit;
   font-weight: 600;
+  font-size: 15px;
   color: var(--text);
+  outline: none;
 }
-.mushaf-filters input[dir="rtl"] {
+.mushaf-search-bar input[dir="rtl"] {
   font-size: 16px;
   font-weight: 500;
+  text-align: right;
 }
-.mushaf-filters .btn-search {
+.mushaf-search-bar input::placeholder {
+  color: var(--muted);
+  opacity: 0.75;
+  font-weight: 500;
+}
+.mushaf-search-bar .btn-search-ico {
   appearance: none;
   border: none;
   cursor: pointer;
-  padding: 11px 18px;
-  border-radius: 12px;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
   background: linear-gradient(135deg, #8EC5FF, #5B9DFF);
   color: #fff;
-  font-weight: 700;
-  font-size: 14px;
-  white-space: nowrap;
-  height: 44px;
+  padding: 0;
+}
+.mushaf-search-bar .btn-search-ico:hover {
+  filter: brightness(1.06);
+}
+.mushaf-search-bar .btn-search-ico svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 .mushaf-hint {
   margin: 0;
@@ -111,6 +135,29 @@
   color: var(--muted);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+.btn-page-note {
+  appearance: none;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  flex: 0 0 auto;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: var(--bg-soft);
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.btn-page-note:hover {
+  border-color: rgba(91, 157, 255, 0.45);
+  color: #8EC5FF;
+}
+.btn-page-note.has-note {
+  border-color: rgba(43, 187, 173, 0.5);
+  background: rgba(43, 187, 173, 0.12);
+  color: #2BBBAD;
 }
 .mushaf-nav-pager {
   display: grid;
@@ -691,13 +738,6 @@
 }
 
 @media (max-width: 700px) {
-  .mushaf-filters {
-    grid-template-columns: 88px minmax(0, 1fr);
-  }
-  .mushaf-filters .btn-search {
-    grid-column: 1 / -1;
-    width: 100%;
-  }
   .mushaf-nav {
     padding: 12px;
     gap: 10px;
@@ -754,9 +794,6 @@
 }
 
 @media (max-width: 420px) {
-  .mushaf-filters {
-    grid-template-columns: 1fr;
-  }
   .mushaf-nav-pager .btn-nav,
   .mushaf-page-jump .btn-go {
     padding: 10px 12px;
@@ -768,25 +805,29 @@
 {% endblock %}
 
 {% block content %}
-<form class="panel" method="get" action="{% url mushaf_url_name|default:'dash-quran' %}" style="padding-bottom:16px;">
+<form class="panel" method="get" action="{% url mushaf_url_name|default:'dash-quran' %}" id="mushafSearchForm" style="padding-bottom:16px;">
   <h2>Axtarış</h2>
   <div class="mushaf-filters">
-    <div>
-      <label for="surah_num">Surə №</label>
-      <input id="surah_num" type="number" name="surah_num" min="1" max="114"
-        value="{{ surah_num }}" placeholder="1–114" />
+    <div class="mushaf-search-bar">
+      <input
+        id="q_unified"
+        type="search"
+        name="q_unified"
+        value="{% if q_ar %}{{ q_ar }}{% elif surah_num %}{{ surah_num }}{% endif %}"
+        placeholder="Surə № (1–114) və ya ərəbcə söz…"
+        autocomplete="off"
+        enterkeyhint="search"
+      />
+      <input type="hidden" name="surah_num" id="surah_num" value="{{ surah_num }}" />
+      <input type="hidden" name="q" id="q_ar" value="{{ q_ar }}" />
+      <button type="submit" class="btn-search-ico" aria-label="Axtar" title="Axtar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="M20 20l-3.5-3.5"></path>
+        </svg>
+      </button>
     </div>
-    <div class="q-field">
-      <label for="q_ar">Ərəbcə ayə / söz</label>
-      <input id="q_ar" type="search" name="q" dir="rtl" lang="ar"
-        value="{{ q_ar }}" placeholder="ٱلْحَمْدُ …" autocomplete="off" />
-    </div>
-    <button type="submit" class="btn-search">Axtar</button>
   </div>
-  <p class="mushaf-hint">
-    Surə nömrəsi ilə keçid; ərəbcə axtarış hərəkəsiz də işləyir.
-    {% if surah_num %}Axtarış bu surəyə məhdudlaşır.{% endif %}
-  </p>
 </form>
 
 {% if q_ar %}
@@ -838,6 +879,9 @@
       {% endfor %}
     </select>
     <span class="mushaf-meta">{{ page_num }} / {{ page_count }}{% if highlight_verse %} · {{ highlight_verse }}{% endif %}</span>
+    <button type="button" class="btn-page-note" id="pageNoteOpen" title="Bu səhifə üçün qeyd">
+      Səhifə qeydi
+    </button>
   </div>
 
   <div class="mushaf-nav-pager">
@@ -1003,6 +1047,47 @@
   </div>
 </div>
 
+{# Səhifə qeydi popup #}
+<div class="vp-backdrop" id="pnBackdrop" aria-hidden="true">
+  <div class="vp-modal" role="dialog" aria-modal="true" aria-labelledby="pnTitle">
+    <div class="vp-head">
+      <div class="vp-head-main">
+        <h3 id="pnTitle">Səhifə qeydi</h3>
+        <p class="vp-sub" id="pnMeta">Səhifə {{ page_num }}</p>
+      </div>
+      <button type="button" class="vp-close" id="pnClose" aria-label="Bağla">×</button>
+    </div>
+    <div class="vp-scroll">
+      <div class="vp-body">
+        <div class="vp-section" style="border-left-color:#2BBBAD;">
+          <div class="pn-write">
+            <div class="pn-toolbar" role="toolbar" aria-label="Format">
+              <button type="button" class="pn-tool" data-wrap="[b]|[/b]" title="Qalın">B Qalın</button>
+              <button type="button" class="pn-tool" data-wrap="[i]|[/i]" title="Kursiv"><i>I</i> Kursiv</button>
+              <button type="button" class="pn-tool is-hl" data-wrap="[hl]|[/hl]" title="Sarı fon">Vurğu</button>
+              <button type="button" class="pn-tool is-box" data-wrap="[box]|[/box]" title="Yaşıl qutu">Qeyd qutusu</button>
+              <button type="button" class="pn-tool is-quote" data-wrap="[q]|[/q]" title="Mavi border">Sitat</button>
+              <button type="button" class="pn-tool is-red" data-wrap="[red]|[/red]" title="Qırmızı">Qırmızı</button>
+              <button type="button" class="pn-tool is-green" data-wrap="[green]|[/green]" title="Yaşıl">Yaşıl</button>
+              <button type="button" class="pn-tool" data-wrap="[blue]|[/blue]" title="Göy">Göy</button>
+            </div>
+            <textarea id="pnNote" placeholder="Qeyd yazın…"></textarea>
+          </div>
+          <div class="pn-preview-pane">
+            <div class="pn-prev-label">Önizləmə</div>
+            <div class="pn-rich" id="pnPreview">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vp-actions">
+      <button type="button" class="vp-btn-delete" id="pnDelete" hidden>🗑 Sil</button>
+      <button type="button" class="vp-btn-cancel" id="pnCancel">Bağla</button>
+      <button type="button" class="vp-btn-save" id="pnSave" style="background:#2BBBAD;">Yadda saxla</button>
+    </div>
+  </div>
+</div>
+
 {# Söz seçimi paneli #}
 <div class="vp-sel-bubble" id="vpSelBubble" aria-hidden="true">
   <div class="vp-sel-ar" id="vpSelAr" dir="rtl"></div>
@@ -1031,11 +1116,9 @@
         <div class="vp-arabic" id="j30Arabic" dir="rtl"></div>
       </div>
       <div class="vp-body">
-        <p class="vp-sec-desc" style="margin-top:0;">Seçilmiş ərəbcə hissə rəngli olacaq. Toxunuşda bu pəncərə açılır.</p>
         <div class="j30-colors" id="j30Colors" role="group" aria-label="Rəng"></div>
         <div class="j30-field">
           <h4 style="color:#6A1B9A;">Xülasə qeydi</h4>
-          <p class="vp-sec-desc">Mətni seçib format verin.</p>
           <div class="pn-write">
             <div class="pn-toolbar" data-j30-for="summary" role="toolbar">
               <button type="button" class="pn-tool" data-wrap="[b]|[/b]">B Qalın</button>
@@ -1048,16 +1131,14 @@
               <button type="button" class="pn-tool" data-wrap="[blue]|[/blue]">Göy</button>
             </div>
             <textarea id="j30Summary" placeholder="Xülasə qeydini yazın…"></textarea>
-            <div class="pn-write-hint">Nümunə: [hl]vacib[/hl] · [b]qalın[/b]</div>
           </div>
           <div class="pn-preview-pane">
-            <div class="pn-prev-label">Önizləmə · xülasə</div>
+            <div class="pn-prev-label">Önizləmə</div>
             <div class="pn-rich" id="j30SummaryPrev">—</div>
           </div>
         </div>
         <div class="j30-field">
           <h4 style="color:#00897B;">Əzbər bölgü qeydi</h4>
-          <p class="vp-sec-desc">Əzbər hissəsi üçün qeyd.</p>
           <div class="pn-write">
             <div class="pn-toolbar" data-j30-for="azbar" role="toolbar">
               <button type="button" class="pn-tool" data-wrap="[b]|[/b]">B Qalın</button>
@@ -1070,7 +1151,6 @@
               <button type="button" class="pn-tool" data-wrap="[blue]|[/blue]">Göy</button>
             </div>
             <textarea id="j30Azbar" placeholder="Əzbər bölgü qeydini yazın…"></textarea>
-            <div class="pn-write-hint">Nümunə: [hl]dayan[/hl]</div>
           </div>
           <div class="pn-preview-pane">
             <div class="pn-prev-label">Önizləmə · əzbər</div>
@@ -1092,6 +1172,241 @@
 
 
 {% block extra_js %}
+<script>
+(function () {
+  /* Birləşmiş axtarış barı: rəqəm → surə, ərəbcə → ayə axtarışı */
+  var form = document.getElementById('mushafSearchForm');
+  var unified = document.getElementById('q_unified');
+  var hidSurah = document.getElementById('surah_num');
+  var hidQ = document.getElementById('q_ar');
+  if (!form || !unified || !hidSurah || !hidQ) return;
+
+  function hasArabic(s) {
+    return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(s || '');
+  }
+
+  function syncDir() {
+    if (hasArabic(unified.value)) {
+      unified.setAttribute('dir', 'rtl');
+      unified.setAttribute('lang', 'ar');
+    } else {
+      unified.setAttribute('dir', 'ltr');
+      unified.removeAttribute('lang');
+    }
+  }
+
+  function applyQuery() {
+    var raw = String(unified.value || '').trim();
+    hidSurah.value = '';
+    hidQ.value = '';
+    if (!raw) return;
+
+    /* Təkcə 1–114 rəqəm → surə keçidi */
+    if (/^\d{1,3}$/.test(raw)) {
+      var n = parseInt(raw, 10);
+      if (n >= 1 && n <= 114) {
+        hidSurah.value = String(n);
+        return;
+      }
+    }
+
+    /* "2 الحمد" və ya "2:5" tipli qarışıq */
+    var m = raw.match(/^(\d{1,3})\s*[:\s]+(.+)$/);
+    if (m) {
+      var sid = parseInt(m[1], 10);
+      var rest = String(m[2] || '').trim();
+      if (sid >= 1 && sid <= 114) hidSurah.value = String(sid);
+      if (rest) hidQ.value = rest;
+      return;
+    }
+
+    hidQ.value = raw;
+  }
+
+  syncDir();
+  unified.addEventListener('input', syncDir);
+  form.addEventListener('submit', function () {
+    applyQuery();
+    /* Serverə yalnız surah_num / q göndər */
+    unified.disabled = true;
+  });
+})();
+</script>
+<script>
+(function () {
+  /* Səhifə qeydi — Duracaq (format xülasələrlə eyni) */
+  var openBtn = document.getElementById('pageNoteOpen');
+  var backdrop = document.getElementById('pnBackdrop');
+  var noteArea = document.getElementById('pnNote');
+  var previewEl = document.getElementById('pnPreview');
+  var saveBtn = document.getElementById('pnSave');
+  var deleteBtn = document.getElementById('pnDelete');
+  var closeBtn = document.getElementById('pnClose');
+  var cancelBtn = document.getElementById('pnCancel');
+  var metaEl = document.getElementById('pnMeta');
+  var pageJump = document.getElementById('page_jump');
+  if (!openBtn || !backdrop || !noteArea) return;
+
+  var pageNotesByPage = {};
+  var activeId = null;
+  var currentPage = parseInt((pageJump && pageJump.value) || '{{ page_num }}', 10) || 1;
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function renderRich(raw) {
+    if (!raw || !String(raw).trim()) return '—';
+    var s = escapeHtml(raw);
+    s = s.replace(/\[box\]([\s\S]*?)\[\/box\]/gi, '<span class="xu-box">$1</span>');
+    s = s.replace(/\[q\]([\s\S]*?)\[\/q\]/gi, '<span class="xu-quote">$1</span>');
+    s = s.replace(/\[hl\]([\s\S]*?)\[\/hl\]/gi, '<span class="xu-hl">$1</span>');
+    s = s.replace(/\[b\]([\s\S]*?)\[\/b\]/gi, '<b>$1</b>');
+    s = s.replace(/\[i\]([\s\S]*?)\[\/i\]/gi, '<i>$1</i>');
+    s = s.replace(/\[red\]([\s\S]*?)\[\/red\]/gi, '<span class="xu-c-red">$1</span>');
+    s = s.replace(/\[green\]([\s\S]*?)\[\/green\]/gi, '<span class="xu-c-green">$1</span>');
+    s = s.replace(/\[blue\]([\s\S]*?)\[\/blue\]/gi, '<span class="xu-c-blue">$1</span>');
+    return s;
+  }
+
+  function refreshPreview() {
+    if (previewEl) previewEl.innerHTML = renderRich(noteArea.value);
+  }
+
+  noteArea.addEventListener('input', refreshPreview);
+  backdrop.querySelectorAll('.pn-tool').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var spec = btn.getAttribute('data-wrap') || '';
+      var parts = spec.split('|');
+      var open = parts[0] || '';
+      var close = parts[1] || '';
+      var start = noteArea.selectionStart;
+      var end = noteArea.selectionEnd;
+      var val = noteArea.value;
+      var selected = val.slice(start, end) || 'mətn';
+      var next = val.slice(0, start) + open + selected + close + val.slice(end);
+      noteArea.value = next;
+      var mid = start + open.length;
+      noteArea.focus();
+      noteArea.setSelectionRange(mid, mid + selected.length);
+      refreshPreview();
+    });
+  });
+
+  function syncOpenBtn() {
+    var has = !!(pageNotesByPage[currentPage] && pageNotesByPage[currentPage].body);
+    openBtn.classList.toggle('has-note', has);
+  }
+
+  function applyPack(pack) {
+    pageNotesByPage = {};
+    (pack.page_notes || []).forEach(function (n) {
+      if (!n || !n.page) return;
+      pageNotesByPage[n.page] = n;
+    });
+    syncOpenBtn();
+  }
+
+  function loadNotes() {
+    fetch('/api/word-marks/', { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) { if (data) applyPack(data); })
+      .catch(function () {});
+  }
+
+  function openModal() {
+    currentPage = parseInt((pageJump && pageJump.value) || String(currentPage), 10) || currentPage;
+    var existing = pageNotesByPage[currentPage];
+    activeId = existing && existing.id != null ? existing.id : null;
+    noteArea.value = existing && existing.body ? existing.body : '';
+    refreshPreview();
+    if (metaEl) metaEl.textContent = 'Səhifə ' + currentPage;
+    if (deleteBtn) {
+      deleteBtn.hidden = activeId == null;
+      deleteBtn.disabled = false;
+      deleteBtn.textContent = 'Sil';
+    }
+    backdrop.classList.add('open');
+    backdrop.setAttribute('aria-hidden', 'false');
+    setTimeout(function () { noteArea.focus(); }, 80);
+  }
+
+  function closeModal() {
+    backdrop.classList.remove('open');
+    backdrop.setAttribute('aria-hidden', 'true');
+  }
+
+  function saveNote() {
+    var body = String(noteArea.value || '').trim();
+    if (!body) {
+      alert('Qeyd yazın');
+      noteArea.focus();
+      return;
+    }
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saxlanılır…';
+    fetch('/api/page-notes/', {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page: currentPage, body: body }),
+    })
+      .then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok) throw new Error((data && data.error) || 'Xəta');
+          return data;
+        });
+      })
+      .then(function (data) {
+        applyPack(data);
+        closeModal();
+      })
+      .catch(function (err) { alert(err.message || 'Saxlanılmadı'); })
+      .finally(function () {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Yadda saxla';
+      });
+  }
+
+  function deleteNote() {
+    if (activeId == null) return;
+    if (!confirm('Bu səhifə qeydini silmək istəyirsiniz?')) return;
+    deleteBtn.disabled = true;
+    deleteBtn.textContent = 'Silinir…';
+    fetch('/api/page-notes/' + activeId + '/', {
+      method: 'DELETE',
+      headers: { Accept: 'application/json' },
+    })
+      .then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok) throw new Error((data && data.error) || 'Xəta');
+          return data;
+        });
+      })
+      .then(function (data) {
+        applyPack(data);
+        closeModal();
+      })
+      .catch(function (err) { alert(err.message || 'Silinmədi'); })
+      .finally(function () {
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = 'Sil';
+      });
+  }
+
+  openBtn.addEventListener('click', openModal);
+  if (saveBtn) saveBtn.addEventListener('click', saveNote);
+  if (deleteBtn) deleteBtn.addEventListener('click', deleteNote);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+  backdrop.addEventListener('click', function (e) {
+    if (e.target === backdrop) closeModal();
+  });
+  loadNotes();
+})();
+</script>
 <script>
 (function () {
   var backdrop = document.getElementById('vpBackdrop');
