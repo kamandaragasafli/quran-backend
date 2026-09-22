@@ -1,7 +1,7 @@
 {% extends "dashboard/base.html" %}
 
-{% block title %}Quran · Miras{% endblock %}
-{% block page_title %}Quran{% endblock %}
+{% block title %}{{ mushaf_title|default:"Quran" }} · Miras{% endblock %}
+{% block page_title %}{{ mushaf_title|default:"Quran" }}{% endblock %}
 {% block page_sub %}QCF4 Mədinə məshəfi · {{ page_count }} səhifə{% endblock %}
 
 {% block extra_css %}
@@ -293,6 +293,52 @@
 .mushaf-glyph.is-ink-waqf { color: #E53935 !important; }
 .mushaf-glyph.is-ink-istinaf { color: #43A047 !important; }
 .mushaf-glyph.is-ink-qiraat { color: #1E88E5 !important; }
+.mushaf-glyph.is-ink-juz30 { /* color via style */ }
+.j30-colors { display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 12px; }
+.j30-color {
+  appearance:none; width:28px; height:28px; border-radius:50%;
+  border:2px solid transparent; cursor:pointer; padding:0;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.12);
+}
+.j30-color.is-on {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px rgba(43,187,173,.45);
+  transform: scale(1.08);
+}
+.j30-field { margin-bottom:14px; }
+.j30-field h4 { margin:0 0 4px; font-size:14px; }
+.vp-sel-bubble .vp-sel-j30 { background:#6A1B9A; }
+.vp-sel-bubble .vp-sel-j30:hover { background:#4A148C; }
+.pn-write { border:2px solid var(--border); border-radius:14px; overflow:hidden; background:var(--card); margin-top:8px; }
+.pn-toolbar { display:flex; flex-wrap:wrap; gap:6px; padding:10px; background:var(--bg-soft); border-bottom:1px solid var(--border); }
+.pn-tool {
+  appearance:none; border:1px solid var(--border); background:var(--card); color:var(--text);
+  border-radius:9px; padding:7px 10px; font:inherit; font-size:12px; font-weight:800; cursor:pointer; line-height:1;
+}
+.pn-tool:hover { border-color:#5B9DFF; color:#8EC5FF; }
+.pn-tool.is-hl { background:rgba(232,168,74,.22); border-color:#F0D86A; color:#E8A84A; }
+.pn-tool.is-box { background:rgba(43,187,173,.16); border-color:#7ED6C2; color:#3DD4C6; }
+.pn-tool.is-quote { background:rgba(91,157,255,.16); border-color:#9BB8FF; color:#8EC5FF; }
+.pn-tool.is-red { background:rgba(198,40,40,.16); border-color:#F5B5B0; color:#EF5350; }
+.pn-tool.is-green { background:rgba(46,125,50,.18); border-color:#A5D6A7; color:#66BB6A; }
+.pn-write textarea {
+  display:block; width:100%; box-sizing:border-box; min-height:110px; border:none; resize:vertical;
+  padding:14px; font:inherit; font-size:15px; line-height:1.55; background:transparent; color:var(--text);
+}
+.pn-write textarea:focus { outline:none; }
+.pn-write-hint { padding:0 14px 12px; font-size:12px; color:var(--muted); }
+.pn-preview-pane {
+  margin-top:10px; padding:12px 14px; border-radius:12px; border:1px dashed var(--border); background:var(--bg-soft);
+}
+.pn-prev-label { font-size:11px; font-weight:800; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:.04em; }
+.pn-rich { font-size:14px; line-height:1.6; color:var(--text); white-space:pre-wrap; }
+.pn-rich .xu-hl { background:rgba(240,216,106,.35); border-radius:4px; padding:0 3px; }
+.pn-rich .xu-box { display:inline-block; padding:2px 8px; border-radius:8px; background:rgba(43,187,173,.16); border:1px solid rgba(43,187,173,.35); }
+.pn-rich .xu-quote { border-left:3px solid #5B9DFF; padding-left:8px; color:#8EC5FF; }
+.pn-rich .xu-c-red { color:#EF5350; }
+.pn-rich .xu-c-green { color:#66BB6A; }
+.pn-rich .xu-c-blue { color:#5B9DFF; }
+
 .mushaf-glyph.is-ink-grad {
   background: linear-gradient(90deg, #E53935 0%, var(--mushaf-text) 48%, #43A047 100%);
   -webkit-background-clip: text;
@@ -722,7 +768,7 @@
 {% endblock %}
 
 {% block content %}
-<form class="panel" method="get" action="{% url 'dash-quran' %}" style="padding-bottom:16px;">
+<form class="panel" method="get" action="{% url mushaf_url_name|default:'dash-quran' %}" style="padding-bottom:16px;">
   <h2>Axtarış</h2>
   <div class="mushaf-filters">
     <div>
@@ -760,7 +806,7 @@
       {% for h in search_hits %}
       <tr>
         <td>
-          <a class="hit" href="{% url 'dash-quran' %}?verse={{ h.verseKey }}&amp;q={{ q_ar|urlencode }}{% if surah_num %}&amp;surah_num={{ surah_num }}{% endif %}">
+          <a class="hit" href="{% url mushaf_url_name|default:'dash-quran' %}?verse={{ h.verseKey }}&amp;q={{ q_ar|urlencode }}{% if surah_num %}&amp;surah_num={{ surah_num }}{% endif %}">
             {{ h.nameAz }} {{ h.ayahNumber }}
           </a>
           <div class="muted">{{ h.verseKey }}</div>
@@ -778,13 +824,13 @@
 </div>
 {% endif %}
 
-<form class="mushaf-nav" method="get" action="{% url 'dash-quran' %}">
+<form class="mushaf-nav" method="get" action="{% url mushaf_url_name|default:'dash-quran' %}">
   {% if q_ar %}<input type="hidden" name="q" value="{{ q_ar }}" />{% endif %}
   {% if surah_num %}<input type="hidden" name="surah_num" value="{{ surah_num }}" />{% endif %}
 
   <div class="mushaf-nav-top">
     <select name="surah" aria-label="Surə"
-      onchange="window.location='{% url 'dash-quran' %}?surah='+encodeURIComponent(this.value)">
+      onchange="window.location='{% url mushaf_url_name|default:'dash-quran' %}?surah='+encodeURIComponent(this.value)">
       {% for s in surahs %}
       <option value="{{ s.id }}" {% if current_surah and current_surah.id == s.id %}selected{% endif %}>
         {{ s.id }}. {{ s.nameAz }}
@@ -796,19 +842,19 @@
 
   <div class="mushaf-nav-pager">
     {% if next_page %}
-    <a class="btn-nav btn-next" href="{% url 'dash-quran' %}?page={{ next_page }}{% if q_ar %}&amp;q={{ q_ar|urlencode }}{% endif %}{% if surah_num %}&amp;surah_num={{ surah_num }}{% endif %}" title="Növbəti səhifə">← Sonra</a>
+    <a class="btn-nav btn-next" href="{% url mushaf_url_name|default:'dash-quran' %}?page={{ next_page }}{% if q_ar %}&amp;q={{ q_ar|urlencode }}{% endif %}{% if surah_num %}&amp;surah_num={{ surah_num }}{% endif %}" title="Növbəti səhifə">← Sonra</a>
     {% else %}
     <span class="btn-nav btn-next disabled">← Sonra</span>
     {% endif %}
 
     <div class="mushaf-page-jump">
       <label class="page-label" for="page_jump">Səhifə</label>
-      <input id="page_jump" type="number" name="page" min="1" max="{{ page_count }}" value="{{ page_num }}" />
+      <input id="page_jump" type="number" name="page" min="{{ page_min|default:1 }}" max="{{ page_max|default:page_count }}" value="{{ page_num }}" />
       <button type="submit" class="btn-go">Get</button>
     </div>
 
     {% if prev_page %}
-    <a class="btn-nav btn-prev" href="{% url 'dash-quran' %}?page={{ prev_page }}{% if q_ar %}&amp;q={{ q_ar|urlencode }}{% endif %}{% if surah_num %}&amp;surah_num={{ surah_num }}{% endif %}" title="Əvvəlki səhifə">Əvvəl →</a>
+    <a class="btn-nav btn-prev" href="{% url mushaf_url_name|default:'dash-quran' %}?page={{ prev_page }}{% if q_ar %}&amp;q={{ q_ar|urlencode }}{% endif %}{% if surah_num %}&amp;surah_num={{ surah_num }}{% endif %}" title="Əvvəlki səhifə">Əvvəl →</a>
     {% else %}
     <span class="btn-nav btn-prev disabled">Əvvəl →</span>
     {% endif %}
@@ -961,18 +1007,97 @@
 <div class="vp-sel-bubble" id="vpSelBubble" aria-hidden="true">
   <div class="vp-sel-ar" id="vpSelAr" dir="rtl"></div>
   <div class="vp-sel-meta" id="vpSelMeta"></div>
+  {% if nav == 'juz30' %}
+  <button type="button" class="vp-sel-j30" id="j30SelOpen">Xülasə / Əzbər</button>
+  {% else %}
   <button type="button" class="vp-sel-open" id="vpSelOpen">Vəqf / İstinaf</button>
   <button type="button" class="vp-sel-qiraat" id="qqSelOpen">Qiraət Qeydi</button>
+  {% endif %}
   <button type="button" class="vp-sel-delete" id="vpSelDelete" hidden>Sil</button>
 </div>
+
+{% if nav == 'juz30' %}
+<div class="vp-backdrop" id="j30Backdrop" aria-hidden="true">
+  <div class="vp-modal" role="dialog" aria-modal="true" aria-labelledby="j30Title" style="width:min(100%,640px);">
+    <div class="vp-head">
+      <div class="vp-head-main">
+        <h3 id="j30Title">30 cüz · qeyd</h3>
+        <p class="vp-sub" id="j30Meta">—</p>
+      </div>
+      <button type="button" class="vp-close" id="j30Close" aria-label="Bağla">×</button>
+    </div>
+    <div class="vp-scroll">
+      <div class="vp-arabic-wrap">
+        <div class="vp-arabic" id="j30Arabic" dir="rtl"></div>
+      </div>
+      <div class="vp-body">
+        <p class="vp-sec-desc" style="margin-top:0;">Seçilmiş ərəbcə hissə rəngli olacaq. Toxunuşda bu pəncərə açılır.</p>
+        <div class="j30-colors" id="j30Colors" role="group" aria-label="Rəng"></div>
+        <div class="j30-field">
+          <h4 style="color:#6A1B9A;">Xülasə qeydi</h4>
+          <p class="vp-sec-desc">Mətni seçib format verin.</p>
+          <div class="pn-write">
+            <div class="pn-toolbar" data-j30-for="summary" role="toolbar">
+              <button type="button" class="pn-tool" data-wrap="[b]|[/b]">B Qalın</button>
+              <button type="button" class="pn-tool" data-wrap="[i]|[/i]"><i>I</i> Kursiv</button>
+              <button type="button" class="pn-tool is-hl" data-wrap="[hl]|[/hl]">Vurğu</button>
+              <button type="button" class="pn-tool is-box" data-wrap="[box]|[/box]">Qeyd qutusu</button>
+              <button type="button" class="pn-tool is-quote" data-wrap="[q]|[/q]">Sitat</button>
+              <button type="button" class="pn-tool is-red" data-wrap="[red]|[/red]">Qırmızı</button>
+              <button type="button" class="pn-tool is-green" data-wrap="[green]|[/green]">Yaşıl</button>
+              <button type="button" class="pn-tool" data-wrap="[blue]|[/blue]">Göy</button>
+            </div>
+            <textarea id="j30Summary" placeholder="Xülasə qeydini yazın…"></textarea>
+            <div class="pn-write-hint">Nümunə: [hl]vacib[/hl] · [b]qalın[/b]</div>
+          </div>
+          <div class="pn-preview-pane">
+            <div class="pn-prev-label">Önizləmə · xülasə</div>
+            <div class="pn-rich" id="j30SummaryPrev">—</div>
+          </div>
+        </div>
+        <div class="j30-field">
+          <h4 style="color:#00897B;">Əzbər bölgü qeydi</h4>
+          <p class="vp-sec-desc">Əzbər hissəsi üçün qeyd.</p>
+          <div class="pn-write">
+            <div class="pn-toolbar" data-j30-for="azbar" role="toolbar">
+              <button type="button" class="pn-tool" data-wrap="[b]|[/b]">B Qalın</button>
+              <button type="button" class="pn-tool" data-wrap="[i]|[/i]"><i>I</i> Kursiv</button>
+              <button type="button" class="pn-tool is-hl" data-wrap="[hl]|[/hl]">Vurğu</button>
+              <button type="button" class="pn-tool is-box" data-wrap="[box]|[/box]">Qeyd qutusu</button>
+              <button type="button" class="pn-tool is-quote" data-wrap="[q]|[/q]">Sitat</button>
+              <button type="button" class="pn-tool is-red" data-wrap="[red]|[/red]">Qırmızı</button>
+              <button type="button" class="pn-tool is-green" data-wrap="[green]|[/green]">Yaşıl</button>
+              <button type="button" class="pn-tool" data-wrap="[blue]|[/blue]">Göy</button>
+            </div>
+            <textarea id="j30Azbar" placeholder="Əzbər bölgü qeydini yazın…"></textarea>
+            <div class="pn-write-hint">Nümunə: [hl]dayan[/hl]</div>
+          </div>
+          <div class="pn-preview-pane">
+            <div class="pn-prev-label">Önizləmə · əzbər</div>
+            <div class="pn-rich" id="j30AzbarPrev">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vp-actions">
+      <button type="button" class="vp-btn-delete" id="j30Delete" hidden>🗑 Sil</button>
+      <button type="button" class="vp-btn-cancel" id="j30Cancel">Bağla</button>
+      <button type="button" class="vp-btn-save" id="j30Save" style="background:#6A1B9A;">Yadda saxla</button>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endif %}
 {% endblock %}
+
 
 {% block extra_js %}
 <script>
 (function () {
   var backdrop = document.getElementById('vpBackdrop');
   if (!backdrop) return;
+  /* 30 cüz — ayrıca j30 skripti; vəqf/qiraət handlerləri qarışmasın */
+  if ({% if nav == 'juz30' %}true{% else %}false{% endif %}) return;
   var page = document.querySelector('.mushaf-page');
   var meta = document.getElementById('vpMeta');
   var arabic = document.getElementById('vpArabic');
@@ -1231,6 +1356,7 @@
   }
 
   function loadMarks() {
+    if ({% if nav == 'juz30' %}true{% else %}false{% endif %}) return;
     fetch('/api/word-marks/', { headers: { Accept: 'application/json' } })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) { if (data) applyPack(data); })
@@ -1583,7 +1709,8 @@
     e.preventDefault();
   });
 
-  document.getElementById('vpSelOpen').addEventListener('click', openModal);
+  var _vpSelOpen = document.getElementById('vpSelOpen');
+  if (_vpSelOpen) _vpSelOpen.addEventListener('click', openModal);
   var qqSelOpen = document.getElementById('qqSelOpen');
   if (qqSelOpen) qqSelOpen.addEventListener('click', openQiraatModal);
   document.getElementById('vpClose').addEventListener('click', closeModal);
@@ -1628,4 +1755,343 @@
   loadMarks();
 })();
 </script>
+{% if nav == 'juz30' %}
+<script>
+(function () {
+  var backdrop = document.getElementById('j30Backdrop');
+  if (!backdrop) return;
+
+  var page = document.querySelector('.mushaf-page');
+  var bubble = document.getElementById('vpSelBubble');
+  var metaEl = document.getElementById('j30Meta');
+  var arabicEl = document.getElementById('j30Arabic');
+  var summaryEl = document.getElementById('j30Summary');
+  var azbarEl = document.getElementById('j30Azbar');
+  var summaryPrev = document.getElementById('j30SummaryPrev');
+  var azbarPrev = document.getElementById('j30AzbarPrev');
+  var saveBtn = document.getElementById('j30Save');
+  var deleteBtn = document.getElementById('j30Delete');
+  var colorsEl = document.getElementById('j30Colors');
+  var selOpen = document.getElementById('j30SelOpen');
+  var selDelete = document.getElementById('vpSelDelete');
+
+  var COLORS = ['#00897B','#6A1B9A','#EF6C00','#1565C0','#C62828','#2E7D32','#AD1457','#00838F'];
+  var color = COLORS[0];
+  var segmentsById = {};
+  var inkLookup = {};
+  var wordGlyphs = Array.prototype.slice.call(document.querySelectorAll('.mushaf-glyph.is-tap[data-type="word"]'));
+  var allTap = Array.prototype.slice.call(document.querySelectorAll('.mushaf-glyph.is-tap'));
+  var picked = [];
+  var lastInfo = null;
+  var activeId = null;
+  var dragAnchor = -1;
+  var dragging = false;
+
+  function hideBubble() {
+    if (!bubble) return;
+    bubble.classList.remove('open');
+    bubble.setAttribute('aria-hidden', 'true');
+  }
+
+  function clearPickVisual() {
+    allTap.forEach(function (g) { g.classList.remove('is-picked'); });
+  }
+
+  function infoFrom(list) {
+    if (!list.length) return null;
+    var words = [], texts = [], verses = [];
+    list.forEach(function (g) {
+      if ((g.getAttribute('data-type') || '') !== 'word') return;
+      var t = (g.getAttribute('data-text') || '').trim();
+      var v = g.getAttribute('data-verse') || '';
+      var pos = parseInt(g.getAttribute('data-position') || '0', 10);
+      if (!v || !pos) return;
+      words.push({ verseKey: v, position: pos, text: t });
+      if (t) texts.push(t);
+      if (verses.indexOf(v) === -1) verses.push(v);
+    });
+    if (!words.length) return null;
+    var label = verses.length === 1 ? verses[0] : (verses.length > 1 ? verses[0] + ' – ' + verses[verses.length - 1] : '');
+    return { words: words, verses: verses, phrase: texts.join(' '), meta: label + (words.length > 1 ? ' · ' + words.length + ' söz' : ' · söz') };
+  }
+
+  function noteIdForPicked() {
+    var ids = {};
+    picked.forEach(function (g) {
+      var key = (g.getAttribute('data-verse') || '') + ':' + (g.getAttribute('data-position') || '');
+      var m = inkLookup[key];
+      if (m && m.noteId != null) ids[String(m.noteId)] = true;
+    });
+    var keys = Object.keys(ids);
+    return keys.length === 1 ? parseInt(keys[0], 10) : null;
+  }
+
+  function expandToSegment() {
+    if (activeId == null) return;
+    var seg = segmentsById[String(activeId)];
+    if (!seg || !seg.words) return;
+    var want = {};
+    seg.words.forEach(function (w) { want[w.verseKey + ':' + w.position] = true; });
+    var next = wordGlyphs.filter(function (g) {
+      return !!want[(g.getAttribute('data-verse') || '') + ':' + (g.getAttribute('data-position') || '')];
+    });
+    if (!next.length) return;
+    picked = next;
+    clearPickVisual();
+    picked.forEach(function (g) { g.classList.add('is-picked'); });
+    lastInfo = infoFrom(picked);
+  }
+
+  function applyRange(a, b) {
+    var lo = Math.min(a, b), hi = Math.max(a, b);
+    picked = wordGlyphs.slice(lo, hi + 1);
+    clearPickVisual();
+    picked.forEach(function (g) { g.classList.add('is-picked'); });
+    lastInfo = infoFrom(picked);
+    activeId = noteIdForPicked();
+    if (activeId != null && lo === hi) expandToSegment();
+    if (selDelete) selDelete.hidden = activeId == null;
+    if (deleteBtn) { deleteBtn.hidden = activeId == null; deleteBtn.disabled = false; deleteBtn.textContent = 'Sil'; }
+    if (lastInfo && lastInfo.phrase) openModal();
+    else hideBubble();
+  }
+
+  function paint() {
+    allTap.forEach(function (g) {
+      g.classList.remove('is-ink-waqf','is-ink-istinaf','is-ink-qiraat','is-ink-grad','is-ink-juz30');
+      g.style.removeProperty('color');
+      var m = inkLookup[(g.getAttribute('data-verse') || '') + ':' + (g.getAttribute('data-position') || '')];
+      if (!m || !m.color) return;
+      g.classList.add('is-ink-juz30');
+      g.style.color = m.color;
+    });
+  }
+
+  function applyPack(pack) {
+    inkLookup = {};
+    segmentsById = {};
+    (pack.segments || []).forEach(function (s) { if (s && s.id != null) segmentsById[String(s.id)] = s; });
+    (pack.ink_marks || []).forEach(function (m) {
+      if (!m || !m.verseKey || !m.position) return;
+      var nid = m.noteId != null ? m.noteId : m.note_id;
+      inkLookup[m.verseKey + ':' + m.position] = { color: m.color, kind: m.kind || 'juz30', noteId: nid != null ? Number(nid) : null };
+    });
+    paint();
+  }
+
+  function load() {
+    fetch('/api/juz30-segments/', { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { if (d) applyPack(d); })
+      .catch(function () {});
+  }
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function rich(raw) {
+    if (!raw || !String(raw).trim()) return '—';
+    var s = esc(raw);
+    s = s.replace(/\[box\]([\s\S]*?)\[\/box\]/gi, '<span class="xu-box">$1</span>');
+    s = s.replace(/\[q\]([\s\S]*?)\[\/q\]/gi, '<span class="xu-quote">$1</span>');
+    s = s.replace(/\[hl\]([\s\S]*?)\[\/hl\]/gi, '<span class="xu-hl">$1</span>');
+    s = s.replace(/\[b\]([\s\S]*?)\[\/b\]/gi, '<b>$1</b>');
+    s = s.replace(/\[i\]([\s\S]*?)\[\/i\]/gi, '<i>$1</i>');
+    s = s.replace(/\[red\]([\s\S]*?)\[\/red\]/gi, '<span class="xu-c-red">$1</span>');
+    s = s.replace(/\[green\]([\s\S]*?)\[\/green\]/gi, '<span class="xu-c-green">$1</span>');
+    s = s.replace(/\[blue\]([\s\S]*?)\[\/blue\]/gi, '<span class="xu-c-blue">$1</span>');
+    return s;
+  }
+
+  function bindToolbar(tb, ta, prev) {
+    if (!tb || !ta) return;
+    function refresh() { if (prev) prev.innerHTML = rich(ta.value); }
+    ta.addEventListener('input', refresh);
+    tb.querySelectorAll('.pn-tool').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var parts = (btn.getAttribute('data-wrap') || '').split('|');
+        var o = parts[0] || '', c = parts[1] || '';
+        var a = ta.selectionStart, b = ta.selectionEnd;
+        var sel = ta.value.slice(a, b) || 'mətn';
+        ta.value = ta.value.slice(0, a) + o + sel + c + ta.value.slice(b);
+        ta.focus();
+        ta.setSelectionRange(a + o.length, a + o.length + sel.length);
+        refresh();
+      });
+    });
+    refresh();
+  }
+
+  function setColor(c) {
+    color = c || COLORS[0];
+    if (colorsEl) {
+      colorsEl.querySelectorAll('.j30-color').forEach(function (btn) {
+        btn.classList.toggle('is-on', btn.getAttribute('data-color') === color);
+      });
+    }
+    renderArabic();
+  }
+
+  function buildColors() {
+    if (!colorsEl || colorsEl.childNodes.length) return;
+    COLORS.forEach(function (c) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'j30-color';
+      btn.setAttribute('data-color', c);
+      btn.style.background = c;
+      btn.addEventListener('click', function () { setColor(c); });
+      colorsEl.appendChild(btn);
+    });
+  }
+
+  function renderArabic() {
+    if (!arabicEl) return;
+    arabicEl.innerHTML = '';
+    if (!lastInfo || !lastInfo.words.length) { arabicEl.textContent = '—'; return; }
+    lastInfo.words.forEach(function (w) {
+      var wrap = document.createElement('span');
+      wrap.className = 'vp-word';
+      wrap.style.color = color;
+      var t = document.createElement('span');
+      t.className = 'vp-word-txt';
+      t.textContent = w.text || '';
+      wrap.appendChild(t);
+      arabicEl.appendChild(wrap);
+      arabicEl.appendChild(document.createTextNode(' '));
+    });
+  }
+
+  function openModal() {
+    if (!lastInfo) lastInfo = infoFrom(picked);
+    if (!lastInfo) return;
+    activeId = noteIdForPicked();
+    expandToSegment();
+    buildColors();
+    var seg = activeId != null ? segmentsById[String(activeId)] : null;
+    setColor((seg && seg.color) || COLORS[0]);
+    if (metaEl) metaEl.textContent = lastInfo.meta;
+    if (summaryEl) summaryEl.value = (seg && seg.summary_note) || '';
+    if (azbarEl) azbarEl.value = (seg && seg.azbar_note) || '';
+    if (summaryPrev) summaryPrev.innerHTML = rich(summaryEl ? summaryEl.value : '');
+    if (azbarPrev) azbarPrev.innerHTML = rich(azbarEl ? azbarEl.value : '');
+    renderArabic();
+    if (deleteBtn) { deleteBtn.hidden = activeId == null; deleteBtn.disabled = false; deleteBtn.textContent = 'Sil'; }
+    hideBubble();
+    backdrop.classList.add('open');
+    backdrop.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeModal() {
+    backdrop.classList.remove('open');
+    backdrop.setAttribute('aria-hidden', 'true');
+  }
+
+  function clearAll() {
+    picked = [];
+    dragAnchor = -1;
+    dragging = false;
+    lastInfo = null;
+    activeId = null;
+    clearPickVisual();
+    if (selDelete) selDelete.hidden = true;
+    if (deleteBtn) deleteBtn.hidden = true;
+    hideBubble();
+  }
+
+  function save() {
+    if (!lastInfo || !lastInfo.words.length) { alert('Söz seçin'); return; }
+    if (!saveBtn) return;
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saxlanılır…';
+    var body = {
+      words: lastInfo.words,
+      color: color,
+      summary_note: summaryEl ? summaryEl.value : '',
+      azbar_note: azbarEl ? azbarEl.value : ''
+    };
+    if (activeId != null) body.id = activeId;
+    fetch('/api/juz30-segments/', {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error((d && d.error) || 'Xəta'); return d; }); })
+      .then(function (d) { applyPack(d); closeModal(); clearAll(); })
+      .catch(function (e) { alert(e.message || 'Saxlanılmadı'); })
+      .finally(function () { saveBtn.disabled = false; saveBtn.textContent = 'Yadda saxla'; });
+  }
+
+  function del() {
+    if (activeId == null) return;
+    if (!confirm('Bu işarəni silmək istəyirsiniz?')) return;
+    if (!deleteBtn) return;
+    deleteBtn.disabled = true;
+    deleteBtn.textContent = 'Silinir…';
+    fetch('/api/juz30-segments/' + activeId + '/', { method: 'DELETE', headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error((d && d.error) || 'Xəta'); return d; }); })
+      .then(function (d) { applyPack(d); closeModal(); clearAll(); })
+      .catch(function (e) { alert(e.message || 'Silinmədi'); })
+      .finally(function () { deleteBtn.disabled = false; deleteBtn.textContent = 'Sil'; });
+  }
+
+  function glyphFromEvent(e) {
+    var t = e.target;
+    if (!t || !t.closest) return null;
+    var g = t.closest('.mushaf-glyph.is-tap');
+    if (!g || !page || !page.contains(g)) return null;
+    if (g.getAttribute('data-type') !== 'word') return null;
+    return g;
+  }
+
+  if (page) {
+    page.addEventListener('pointerdown', function (e) {
+      if (backdrop.classList.contains('open')) return;
+      if (e.button != null && e.button !== 0) return;
+      var g = glyphFromEvent(e);
+      if (!g) { if (bubble && !bubble.contains(e.target)) clearAll(); return; }
+      var idx = wordGlyphs.indexOf(g);
+      if (idx < 0) return;
+      e.preventDefault();
+      try { page.setPointerCapture(e.pointerId); } catch (err) {}
+      dragAnchor = idx;
+      dragging = true;
+      applyRange(idx, idx);
+    }, true);
+
+    page.addEventListener('pointermove', function (e) {
+      if (!dragging || dragAnchor < 0) return;
+      e.preventDefault();
+      var g = glyphFromEvent(e);
+      if (!g) {
+        var el = document.elementFromPoint(e.clientX, e.clientY);
+        g = el && el.closest ? el.closest('.mushaf-glyph.is-tap') : null;
+        if (g && g.getAttribute('data-type') !== 'word') g = null;
+      }
+      if (!g) return;
+      var idx = wordGlyphs.indexOf(g);
+      if (idx < 0) return;
+      applyRange(dragAnchor, idx);
+    }, true);
+
+    page.addEventListener('pointerup', function () { dragging = false; }, true);
+  }
+
+  if (selOpen) selOpen.addEventListener('click', openModal);
+  if (selDelete) selDelete.addEventListener('click', del);
+  if (saveBtn) saveBtn.addEventListener('click', save);
+  if (deleteBtn) deleteBtn.addEventListener('click', del);
+  var closeBtn = document.getElementById('j30Close');
+  var cancelBtn = document.getElementById('j30Cancel');
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+  backdrop.addEventListener('click', function (e) { if (e.target === backdrop) closeModal(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && backdrop.classList.contains('open')) closeModal();
+  });
+  bindToolbar(backdrop.querySelector('[data-j30-for="summary"]'), summaryEl, summaryPrev);
+  bindToolbar(backdrop.querySelector('[data-j30-for="azbar"]'), azbarEl, azbarPrev);
+  load();
+})();
+</script>
+{% endif %}
+
 {% endblock %}

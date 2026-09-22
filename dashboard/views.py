@@ -1,14 +1,75 @@
 from pathlib import Path
 import re
 
+from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_http_methods
 
 from . import arabic_search as ar_search
 from . import mushaf as mushaf_lib
 
 
+def _ensure_dash_user() -> None:
+    """DASH_USERNAME / DASH_PASSWORD ilə ilk admin (yoxdursa)."""
+    import os
+
+    username = (os.environ.get('DASH_USERNAME') or 'admin').strip()
+    password = os.environ.get('DASH_PASSWORD') or ''
+    if not password:
+        return
+    User = get_user_model()
+    if User.objects.filter(username=username).exists():
+        return
+    User.objects.create_superuser(
+        username=username,
+        email=os.environ.get('DASH_EMAIL', '') or '',
+        password=password,
+    )
+
+
+@require_http_methods(['GET', 'POST'])
+def login_view(request):
+    """Dashboard girişi — sessiya cookie ilə saxlanır."""
+    _ensure_dash_user()
+    if request.user.is_authenticated:
+        return redirect(request.GET.get('next') or 'dash-home')
+
+    error = ''
+    username = ''
+    next_url = (request.POST.get('next') or request.GET.get('next') or '').strip()
+    if next_url.startswith('//') or (next_url and not next_url.startswith('/')):
+        next_url = ''
+
+    if request.method == 'POST':
+        username = (request.POST.get('username') or '').strip()
+        password = request.POST.get('password') or ''
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_active:
+            login(request, user)
+            return redirect(next_url or 'dash-home')
+        error = 'İstifadəçi adı və ya şifrə yanlışdır.'
+
+    return render(
+        request,
+        'dashboard/login.html',
+        {
+            'error': error,
+            'username': username,
+            'next': next_url,
+        },
+    )
+
+
+@require_http_methods(['GET', 'POST'])
+def logout_view(request):
+    logout(request)
+    return redirect('dash-login')
+
+
+@login_required
 def home(request):
     return render(
         request,
@@ -157,7 +218,21 @@ def summaries(request):
     )
 
 
-def quran(request):
+def _mushaf_reader(
+    request,
+    *,
+    nav: str,
+    url_name: str,
+    mushaf_title: str,
+    page_min: int = 1,
+    page_max: int | None = None,
+):
+    """Ümumi məshəf oxucu — tam Quran və ya cüz aralığı."""
+    if page_max is None:
+        page_max = mushaf_lib.PAGE_COUNT
+    page_min = max(1, page_min)
+    page_max = min(int(page_max), mushaf_lib.PAGE_COUNT)
+
     surah_q = request.GET.get('surah')
     page_q = request.GET.get('page')
     surah_num_q = (request.GET.get('surah_num') or '').strip()
@@ -189,7 +264,6 @@ def quran(request):
             if 1 <= sid <= 114:
                 page_num = mushaf_lib.surah_start_page(sid)
                 filter_surah = filter_surah or sid
-                # Surə № + axtarış → nəticənin ilk ayəsinə keçə bilək
                 if not q_ar:
                     explicit_nav = True
         except (TypeError, ValueError):
@@ -211,7 +285,6 @@ def quran(request):
 
     search_hits: list[dict] = []
     if q_ar and ar_search.has_arabic_letters(q_ar):
-        # If surah_num set, also scope search to that surah
         scope = filter_surah
         if scope is None and surah_num_q:
             try:
@@ -221,20 +294,34 @@ def quran(request):
             except (TypeError, ValueError):
                 pass
         search_hits = ar_search.search_arabic_ayahs(q_ar, surah_id=scope)
+        # Cüz aralığı — yalnız bu səhifələrdəki nəticələr
+        if page_min > 1 or page_max < mushaf_lib.PAGE_COUNT:
+            search_hits = [
+                h for h in search_hits
+                if page_min <= int(h.get('page') or 0) <= page_max
+            ]
         if not explicit_nav and search_hits and search_hits[0].get('page'):
             page_num = search_hits[0]['page']
             highlight_verse = search_hits[0]['verseKey']
 
     if page_num is None:
-        page_num = 1
+        page_num = page_min
 
-    page_num = max(1, min(int(page_num), mushaf_lib.PAGE_COUNT))
+    raw_page = int(page_num)
+    page_num = max(page_min, min(raw_page, page_max))
+    # Ayə / naviqasiya cüzdən kənardırsa vurğunu sil
+    if highlight_verse and (raw_page < page_min or raw_page > page_max):
+        highlight_verse = None
+
     page = mushaf_lib.prepare_page_view(page_num)
-    surahs = mushaf_lib.load_surah_meta()
+    all_surahs = mushaf_lib.load_surah_meta()
+    if page_min > 1 or page_max < mushaf_lib.PAGE_COUNT:
+        surahs = mushaf_lib.surahs_for_page_range(page_min, page_max)
+    else:
+        surahs = all_surahs
     current_surah_idx = mushaf_lib.page_to_surah_index(page_num)
-    current_surah = surahs[current_surah_idx] if surahs else None
+    current_surah = all_surahs[current_surah_idx] if all_surahs else None
 
-    # Növbəti/əvvəlki səhifənin fontlarını preload üçün topla
     def _preload_fonts(pnum):
         pv = mushaf_lib.prepare_page_view(pnum)
         return pv['fonts'] if pv else []
@@ -242,7 +329,7 @@ def quran(request):
     preload_fonts: list[dict] = []
     seen_font_files: set[str] = set(f['file'] for f in (page['fonts'] if page else []))
     for adj_page in (page_num + 1, page_num - 1):
-        if 1 <= adj_page <= mushaf_lib.PAGE_COUNT:
+        if page_min <= adj_page <= page_max:
             for f in _preload_fonts(adj_page):
                 if f['file'] not in seen_font_files:
                     preload_fonts.append(f)
@@ -257,14 +344,18 @@ def quran(request):
         request,
         'dashboard/quran.html',
         {
-            'nav': 'quran',
+            'nav': nav,
+            'mushaf_url_name': url_name,
+            'mushaf_title': mushaf_title,
             'page_num': page_num,
-            'page_count': mushaf_lib.PAGE_COUNT,
+            'page_min': page_min,
+            'page_max': page_max,
+            'page_count': page_max,
             'page': page,
             'surahs': surahs,
             'current_surah': current_surah,
-            'prev_page': page_num - 1 if page_num > 1 else None,
-            'next_page': page_num + 1 if page_num < mushaf_lib.PAGE_COUNT else None,
+            'prev_page': page_num - 1 if page_num > page_min else None,
+            'next_page': page_num + 1 if page_num < page_max else None,
             'mushaf_ready': page is not None,
             'q_ar': q_ar,
             'surah_num': surah_num_q,
@@ -273,6 +364,29 @@ def quran(request):
             'highlight_verse': highlight_verse or '',
             'preload_fonts': preload_fonts,
         },
+    )
+
+
+def quran(request):
+    return _mushaf_reader(
+        request,
+        nav='quran',
+        url_name='dash-quran',
+        mushaf_title='Quran',
+        page_min=1,
+        page_max=mushaf_lib.PAGE_COUNT,
+    )
+
+
+def juz30(request):
+    """30-cu cüz — eyni məshəf UI, yalnız səhifə 582–604."""
+    return _mushaf_reader(
+        request,
+        nav='juz30',
+        url_name='dash-juz30',
+        mushaf_title='30 cüz',
+        page_min=mushaf_lib.juz_start_page(30),
+        page_max=mushaf_lib.juz_end_page(30),
     )
 
 

@@ -271,9 +271,45 @@ class WordMarkNote(models.Model):
         if not items:
             return []
 
-        # Vəqf / istinaf — tətbiqdə yalnız rəng; «Haqqında» yalnız qiraət üçün
+        # Vəqf / istinaf — tətbiqdə «Duracaq» bölümündə yalnız qeyd mətni
         if self.kind == self.KIND_WAQF_ISTINAF:
-            return []
+            parts = []
+            w = (self.waqf_note or '').strip()
+            i = (self.istinaf_note or '').strip()
+            if w:
+                parts.append(w)
+            if i and i not in parts:
+                parts.append(i)
+            body = '\n\n'.join(parts)
+            if not body:
+                return []
+            lemma = ' '.join(x['text'] for x in items if x['text']) or items[0]['verseKey']
+            by_verse: dict[str, list[dict]] = {}
+            for item in items:
+                by_verse.setdefault(item['verseKey'], []).append(item)
+            notes = []
+            for vk, words in by_verse.items():
+                verse_lemma = ' '.join(x['text'] for x in words if x['text']) or vk
+                notes.append(
+                    {
+                        'verseKey': vk,
+                        'lemma': lemma or verse_lemma,
+                        'body': body,
+                        # Rəng yox — yalnız ərəbcə seçim (əlavə kontekst)
+                        'examples': [
+                            {
+                                'label': '',
+                                'arabic': (x.get('text') or '').strip(),
+                                'color': '',
+                            }
+                            for x in words
+                            if (x.get('text') or '').strip()
+                        ],
+                        'positions': [x['position'] for x in words],
+                        'kind': self.KIND_WAQF_ISTINAF,
+                    }
+                )
+            return notes
 
         if self.kind == self.KIND_MA_INKAR:
             body = (self.waqf_note or '').strip()
@@ -344,3 +380,131 @@ class WordMarkNote(models.Model):
             return notes
 
         return []
+
+
+class PageNote(models.Model):
+    """Məshəf səhifə qeydi — tətbiqdə AyahInfoSheet · Duracaq."""
+
+    page = models.PositiveSmallIntegerField(unique=True, db_index=True)
+    body = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['page']
+        verbose_name = 'Səhifə qeydi'
+        verbose_name_plural = 'Səhifə qeydləri'
+
+    def __str__(self):
+        return f'Səhifə {self.page}'
+
+    def to_api(self) -> dict:
+        return {
+            'id': self.pk,
+            'page': self.page,
+            'body': (self.body or '').strip(),
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+# 30 cüz — seçilmiş ərəbcə hissənin rəngi
+JUZ30_COLORS = (
+    '#00897B',  # teal
+    '#6A1B9A',  # purple
+    '#EF6C00',  # orange
+    '#1565C0',  # blue
+    '#C62828',  # red
+    '#2E7D32',  # green
+    '#AD1457',  # pink
+    '#00838F',  # cyan
+)
+
+
+class Juz30Segment(models.Model):
+    """
+    30-cu cüz hərəkəli məshəf — söz seçimi.
+    Rəngli ərəbcə + toxunuşda xülasə qeydi + əzbər bölgü qeydi.
+    """
+
+    words = models.JSONField(
+        default=list,
+        help_text='[{"verseKey":"78:1","position":1,"text":"..."}]',
+    )
+    color = models.CharField(max_length=16, default='#00897B')
+    summary_note = models.TextField(blank=True, default='', verbose_name='Xülasə qeydi')
+    azbar_note = models.TextField(blank=True, default='', verbose_name='Əzbər bölgü qeydi')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+        verbose_name = '30 cüz seqmenti'
+        verbose_name_plural = '30 cüz seqmentləri'
+
+    def __str__(self):
+        keys = []
+        for w in self.words or []:
+            vk = w.get('verseKey') or ''
+            pos = w.get('position')
+            if vk and pos:
+                keys.append(f'{vk}#{pos}')
+        return ' '.join(keys[:4]) or f'Juz30#{self.pk}'
+
+    def _word_items(self) -> list[dict]:
+        out = []
+        for raw in self.words or []:
+            if not isinstance(raw, dict):
+                continue
+            vk = str(raw.get('verseKey') or '').strip()
+            try:
+                pos = int(raw.get('position'))
+            except (TypeError, ValueError):
+                continue
+            text = str(raw.get('text') or '').strip()
+            if not vk or pos < 1:
+                continue
+            out.append({'verseKey': vk, 'position': pos, 'text': text})
+
+        def _sort_key(w: dict):
+            vk = w['verseKey']
+            parts = vk.split(':')
+            try:
+                return (int(parts[0]), int(parts[1]), w['position'])
+            except (ValueError, IndexError):
+                return (0, 0, w['position'])
+
+        out.sort(key=_sort_key)
+        return out
+
+    def resolved_color(self) -> str:
+        c = (self.color or '').strip()
+        if c.startswith('#') and len(c) in (4, 7):
+            return c
+        return JUZ30_COLORS[0]
+
+    def to_ink_marks(self) -> list[dict]:
+        color = self.resolved_color()
+        return [
+            {
+                'verseKey': w['verseKey'],
+                'position': w['position'],
+                'color': color,
+                'kind': 'juz30',
+                'text': w.get('text') or '',
+                'noteId': self.pk,
+            }
+            for w in self._word_items()
+        ]
+
+    def to_api(self) -> dict:
+        items = self._word_items()
+        phrase = ' '.join(w['text'] for w in items if w.get('text'))
+        return {
+            'id': self.pk,
+            'words': items,
+            'color': self.resolved_color(),
+            'summary_note': self.summary_note or '',
+            'azbar_note': self.azbar_note or '',
+            'phrase': phrase,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }

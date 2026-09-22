@@ -13,9 +13,42 @@ from django.conf import settings
 
 PAGE_COUNT = 604
 
+# Madinah məshəf — cüz başlanğıc səhifələri (tətbiq juzPages.ts ilə eyni)
+JUZ_START_PAGES = [
+    1, 22, 42, 62, 82, 102, 121, 142, 162, 182, 201, 222, 242, 262, 282, 302, 322,
+    342, 362, 382, 402, 422, 442, 462, 482, 502, 522, 542, 562, 582,
+]
+
 QCF_VERSE_PAGE_MOVE = {
     '5:77': {'from': 120, 'to': 121},
 }
+
+
+def juz_start_page(juz: int) -> int:
+    if juz < 1 or juz > 30:
+        return 1
+    return JUZ_START_PAGES[juz - 1]
+
+
+def juz_end_page(juz: int) -> int:
+    if juz < 1 or juz > 30:
+        return PAGE_COUNT
+    if juz == 30:
+        return PAGE_COUNT
+    return JUZ_START_PAGES[juz] - 1
+
+
+def surahs_for_page_range(page_min: int, page_max: int) -> list[dict]:
+    """Verilmiş səhifə aralığına düşən surələr."""
+    meta = load_surah_meta()
+    starts = load_surah_start_pages()
+    out: list[dict] = []
+    for i, s in enumerate(meta):
+        start = int(starts[i]) if i < len(starts) else 1
+        end = int(starts[i + 1]) - 1 if i + 1 < len(starts) else PAGE_COUNT
+        if end >= page_min and start <= page_max:
+            out.append(s)
+    return out
 
 
 def bundled_mushaf_dir() -> Path:
