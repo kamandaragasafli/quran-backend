@@ -879,9 +879,11 @@
       {% endfor %}
     </select>
     <span class="mushaf-meta">{{ page_num }} / {{ page_count }}{% if highlight_verse %} · {{ highlight_verse }}{% endif %}</span>
+    {% if nav != 'juz30' %}
     <button type="button" class="btn-page-note" id="pageNoteOpen" title="Bu səhifə üçün qeyd">
       Səhifə qeydi
     </button>
+    {% endif %}
   </div>
 
   <div class="mushaf-nav-pager">
@@ -1047,7 +1049,8 @@
   </div>
 </div>
 
-{# Səhifə qeydi popup #}
+{% if nav != 'juz30' %}
+{# Səhifə qeydi popup — yalnız tam Quran #}
 <div class="vp-backdrop" id="pnBackdrop" aria-hidden="true">
   <div class="vp-modal" role="dialog" aria-modal="true" aria-labelledby="pnTitle">
     <div class="vp-head">
@@ -1087,6 +1090,7 @@
     </div>
   </div>
 </div>
+{% endif %}
 
 {# Söz seçimi paneli #}
 <div class="vp-sel-bubble" id="vpSelBubble" aria-hidden="true">
