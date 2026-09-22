@@ -105,8 +105,8 @@ class WordMarkNote(models.Model):
         (KIND_MA_INKAR, 'Mə inkar ədatı'),
     ]
 
-    DIR_ISTINAF_FIRST = 'istinaf_first'  # yaşıl → … → qırmızı
-    DIR_WAQF_FIRST = 'waqf_first'        # qırmızı → … → yaşıl
+    DIR_ISTINAF_FIRST = 'istinaf_first'  # oxuma: yaşıl → qırmızı
+    DIR_WAQF_FIRST = 'waqf_first'        # oxuma: qırmızı → yaşıl
     DIR_CHOICES = [
         (DIR_ISTINAF_FIRST, 'İstinaf → Vəqf'),
         (DIR_WAQF_FIRST, 'Vəqf → İstinaf'),
@@ -159,6 +159,19 @@ class WordMarkNote(models.Model):
             if not vk or pos < 1:
                 continue
             out.append({'verseKey': vk, 'position': pos, 'text': text})
+
+        # Oxuma sırasına görə sırala: əvvəlcə ayə, sonra position.
+        # Bu olmasa items[0] admin əlavə sırasından asılıdır →
+        # üst-üstə düşəndə söz çıxarılsa first/last yer dəyişə bilər.
+        def _sort_key(w: dict):
+            vk = w['verseKey']
+            parts = vk.split(':')
+            try:
+                return (int(parts[0]), int(parts[1]), w['position'])
+            except (ValueError, IndexError):
+                return (0, 0, w['position'])
+
+        out.sort(key=_sort_key)
         return out
 
     def to_ink_marks(self) -> list[dict]:
@@ -240,7 +253,8 @@ class WordMarkNote(models.Model):
                 'noteId': self.pk,
             }
             if has_w and has_i:
-                # Tək söz — gradient (istiqamətə görə)
+                # Tək söz — textGradient oxuma sırasıdır (RTL: əvvəl→son).
+                # Tətbiq / web LTR linear-gradient üçün massivi tərsinə çevirir.
                 if self.direction == self.DIR_WAQF_FIRST:
                     mark['textGradient'] = [COLOR_WAQF, COLOR_GRAD_MID, COLOR_ISTINAF]
                 else:

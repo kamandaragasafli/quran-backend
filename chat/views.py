@@ -208,14 +208,15 @@ def word_marks(request):
 
     touch_keys = {f"{w['verseKey']}:{w['position']}" for w in words}
     for note in list(WordMarkNote.objects.all()):
-        remaining = []
-        for w in note._word_items():
-            key = f"{w['verseKey']}:{w['position']}"
-            if key not in touch_keys:
-                remaining.append(w)
+        current = note._word_items()  # artıq position-a görə sıralanmış
+        remaining = [
+            w for w in current
+            if f"{w['verseKey']}:{w['position']}" not in touch_keys
+        ]
         if not remaining:
             note.delete()
-        elif len(remaining) != len(note._word_items()):
+        elif len(remaining) != len(current):
+            # Sıralı halda saxla — gələcəkdə first/last dəyişməsin
             note.words = remaining
             note.save(update_fields=['words', 'updated_at'])
 
