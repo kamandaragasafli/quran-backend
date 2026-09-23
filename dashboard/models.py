@@ -485,12 +485,7 @@ class Juz30Segment(models.Model):
         return JUZ30_COLORS[0]
 
     def to_ink_marks(self) -> list[dict]:
-        items = self._word_items()
-        if not items:
-            return []
         color = self.resolved_color()
-        n = len(items)
-        targets = items if n == 1 else [items[0], items[-1]]
         return [
             {
                 'verseKey': w['verseKey'],
@@ -500,7 +495,7 @@ class Juz30Segment(models.Model):
                 'text': w.get('text') or '',
                 'noteId': self.pk,
             }
-            for w in targets
+            for w in self._word_items()
         ]
 
     def to_api(self) -> dict:
