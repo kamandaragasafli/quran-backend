@@ -2155,6 +2155,38 @@
     return keys.length === 1 ? parseInt(keys[0], 10) : null;
   }
 
+  /** Rəng yalnız uclarda olsa belə — seqment sözlər siyahısından tap (tətbiq byPos kimi). */
+  function resolveActiveIdFromPicked() {
+    var fromInk = noteIdForPicked();
+    if (fromInk != null) return fromInk;
+    if (!picked.length) return null;
+
+    function segmentContainsKey(seg, key) {
+      if (!seg || !seg.words) return false;
+      for (var i = 0; i < seg.words.length; i++) {
+        var w = seg.words[i];
+        if ((w.verseKey + ':' + w.position) === key) return true;
+      }
+      return false;
+    }
+
+    var pickedKeys = {};
+    picked.forEach(function (g) {
+      pickedKeys[(g.getAttribute('data-verse') || '') + ':' + (g.getAttribute('data-position') || '')] = true;
+    });
+
+    var matchId = null;
+    Object.keys(segmentsById).forEach(function (sid) {
+      var seg = segmentsById[sid];
+      var ok = true;
+      Object.keys(pickedKeys).forEach(function (k) {
+        if (!segmentContainsKey(seg, k)) ok = false;
+      });
+      if (ok) matchId = parseInt(sid, 10);
+    });
+    return matchId;
+  }
+
   function expandToSegment() {
     if (activeId == null) return;
     var seg = segmentsById[String(activeId)];
@@ -2212,7 +2244,7 @@
     clearPickVisual();
     picked.forEach(function (g) { g.classList.add('is-picked'); });
     lastInfo = infoFrom(picked);
-    activeId = noteIdForPicked();
+    activeId = resolveActiveIdFromPicked();
     if (activeId != null && lo === hi) expandToSegment();
     if (selDelete) selDelete.hidden = activeId == null;
     if (deleteBtn) { deleteBtn.hidden = activeId == null; deleteBtn.disabled = false; deleteBtn.textContent = 'Sil'; }
@@ -2328,7 +2360,7 @@
   function openModal() {
     if (!lastInfo) lastInfo = infoFrom(picked);
     if (!lastInfo) return;
-    activeId = noteIdForPicked();
+    activeId = resolveActiveIdFromPicked();
     expandToSegment();
     buildColors();
     var seg = activeId != null ? segmentsById[String(activeId)] : null;
