@@ -1,6 +1,6 @@
 # Quran backend (Django + SQLite)
 
-Expo (Miras) app və Miras dashboard üçün API: xülasələr, məshəf söz işarələri, qarilər.
+Expo (Miras) app və Miras dashboard üçün API: xülasələr, mushaf söz işarələri, qarilər.
 
 ## Qurulum (lokal)
 
@@ -26,7 +26,7 @@ python manage.py runserver 0.0.0.0:8787
 
 SQLite: `data/chat.db` (və ya `DATA_DIR/chat.db`). Dashboard əlavələri burada qalır.
 
-**Surələr / məshəf DB-də deyil** — `quran-backend/data/mushaf/` içindədir (tətbiq yükləmək lazım deyil):
+**Surələr / mushaf DB-də deyil** — `quran-backend/data/mushaf/` içindədir (tətbiq yükləmək lazım deyil):
 
 - `surah-meta.json` — 114 surə
 - `pages/*.json` — 604 səhifə

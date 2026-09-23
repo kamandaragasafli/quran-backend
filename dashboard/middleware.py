@@ -44,4 +44,6 @@ class DashboardLoginRequiredMiddleware:
             return True
         if path.startswith('/login/') or path.startswith('/logout/'):
             return True
+        if path.rstrip('/') in ('/gizlilik', '/privacy'):
+            return True
         return False

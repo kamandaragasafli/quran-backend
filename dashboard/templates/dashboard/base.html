@@ -51,6 +51,7 @@
       --g-telegram: linear-gradient(135deg, #7EC8E3, #4A9BC7);
       --g-reciters: linear-gradient(135deg, #A78BFA, #7C5CF0);
       --g-about: linear-gradient(135deg, #F6C77A, #E8A84A);
+      --g-privacy: linear-gradient(135deg, #9AA8F0, #6B7AD6);
       --g-meal-intro: linear-gradient(135deg, #7ED6C2, #4A9BC7);
     }
     [data-theme="light"] {
@@ -246,6 +247,7 @@
     .nav a.nav-plain { --nav-accent: #C4842A; --nav-soft: rgba(232, 168, 74, 0.16); }
     .nav a.nav-summaries { --nav-accent: #3A7AD9; --nav-soft: rgba(91, 157, 255, 0.14); }
     .nav a.nav-about { --nav-accent: #C4842A; --nav-soft: rgba(232, 168, 74, 0.14); }
+    .nav a.nav-privacy { --nav-accent: #6B7AD6; --nav-soft: rgba(107, 122, 214, 0.14); }
     .nav a.nav-meal-intro { --nav-accent: #2F7FA8; --nav-soft: rgba(74, 155, 199, 0.14); }
     .nav a.nav-telegram { --nav-accent: #2AABEE; --nav-soft: rgba(42, 171, 238, 0.12); }
     .nav a.nav-reciters { --nav-accent: #6A4FD8; --nav-soft: rgba(124, 92, 240, 0.12); }
@@ -499,6 +501,7 @@
     .feature-card.g-hifz { --accent: #C4842A; --accent-soft: rgba(232, 168, 74, 0.18); }
     .feature-card.g-meal { --accent: #3A7AD9; --accent-soft: rgba(91, 157, 255, 0.16); }
     .feature-card.g-about { --accent: #C4842A; --accent-soft: rgba(232, 168, 74, 0.16); }
+    .feature-card.g-privacy { --accent: #6B7AD6; --accent-soft: rgba(107, 122, 214, 0.16); }
     .feature-card.g-meal-intro { --accent: #2F7FA8; --accent-soft: rgba(74, 155, 199, 0.16); }
     .feature-card.g-groups { --accent: #2AABEE; --accent-soft: rgba(42, 171, 238, 0.14); }
     .feature-card.g-reciters { --accent: #6A4FD8; --accent-soft: rgba(124, 92, 240, 0.14); }
@@ -759,6 +762,12 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7h.01"/></svg>
           </span>
           Haqqında
+        </a>
+        <a href="{% url 'dash-privacy' %}" class="nav-privacy {% if nav == 'privacy' %}active{% endif %}">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+          </span>
+          Gizlilik
         </a>
         <a href="{% url 'dash-meal-intro' %}" class="nav-meal-intro {% if nav == 'meal_intro' %}active{% endif %}">
           <span class="nav-icon" aria-hidden="true">

@@ -26,6 +26,7 @@ def app_content_pack(_request):
     """Haqqında + Məal giriş + Qarilər + Telegram — tətbiq üçün pack."""
     keys = [
         AppContent.KEY_ABOUT,
+        AppContent.KEY_PRIVACY,
         AppContent.KEY_MEAL_INTRO,
         AppContent.KEY_RECITERS,
         AppContent.KEY_TELEGRAM,
@@ -50,6 +51,7 @@ def app_content_detail(_request, key: str):
     key = (key or '').strip().replace('-', '_')
     allowed = {
         AppContent.KEY_ABOUT,
+        AppContent.KEY_PRIVACY,
         AppContent.KEY_MEAL_INTRO,
         AppContent.KEY_RECITERS,
         AppContent.KEY_TELEGRAM,

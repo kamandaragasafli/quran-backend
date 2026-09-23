@@ -285,9 +285,84 @@ TELEGRAM_DEFAULT = {
 }
 
 
+PRIVACY_DEFAULT = {
+    'title': 'Gizlilik siyasəti',
+    'lead': (
+        'Bu sənəd Miras Akademiyası mobil tətbiqinin («Miras», «tətbiq») şəxsi məlumatları '
+        'necə topladığını, saxladığını və istifadə etdiyini izah edir. Tətbiqdən istifadə '
+        'etməklə bu siyasətlə razılaşırsınız.'
+    ),
+    'body': (
+        '## 1. Giriş\n\n'
+        'Miras Akademiyası Quran tədrisi, tilavət, əzbərləmə və əlaqəli təlim materialları '
+        'təqdim edən təhsil layihəsidir. Şəxsi məxfiliyinizə hörmət edirik və məlumatları '
+        'yalnız xidmətin işləməsi üçün lazım olan həcmdə emal edirik.\n\n'
+        '## 2. Hansı məlumatlar toplanır?\n\n'
+        '### 2.1. Cihazda saxlanan məlumatlar\n\n'
+        'Tətbiq oxuma rahatlığı üçün bəzi məlumatları cihazınızda (lokal yaddaşda) saxlaya bilər:\n\n'
+        '- Son oxunan səhifə / surə və oxuma irəliləyişi\n'
+        '- Əlfavoritlər, əzbər səviyyəsi və oxşar seçimlər\n'
+        '- Tema, qari seçimi və digər tətbiq parametrləri\n'
+        '- Offline keş (məzmun, audio və ya işarələr)\n\n'
+        'Bu məlumatlar adətən hesab yaratmadan, birbaşa cihazınızda qalır.\n\n'
+        '### 2.2. Serverə göndərilən məlumatlar\n\n'
+        'Məzmun yeniləmələri, xülasələr, söz işarələri, chat və digər onlayn funksiyalar '
+        'üçün tətbiq bizim serverlərimizə sorğu göndərə bilər. Bu zaman texniki jurnalda '
+        'aşağıdakılar qeydə alına bilər:\n\n'
+        '- IP ünvanı\n'
+        '- Sorğu tarixi və vaxtı\n'
+        '- Cihaz / brauzer tipi (User-Agent)\n'
+        '- Sorğu edilən ünvan (API yolu)\n\n'
+        'Biz sizin adınızı, telefon nömrənizi və ya e-poçtunuzu tətbiqin əsas oxuma '
+        'funksiyası üçün tələb etmirik. Chat və ya digər əlavə xidmətlərdə özünüz '
+        'paylaşdığınız məlumatlar həmin xidmətin məqsədinə uyğun emal oluna bilər.\n\n'
+        '## 3. Məlumatların istifadə məqsədi\n\n'
+        'Toplanan məlumatlar aşağıdakı məqsədlər üçün istifadə olunur:\n\n'
+        '- Tətbiqin və məzmunun düzgün işləməsi\n'
+        '- Oxuma təcrübəsinin fərdiləşdirilməsi (irəliləyiş, seçimlər)\n'
+        '- Xətaların aşkarlanması və təhlükəsizliyin qorunması\n'
+        '- Xidmətin təkmilləşdirilməsi\n\n'
+        'Şəxsi məlumatlarınızı reklam üçün üçüncü şəxslərə satmırıq.\n\n'
+        '## 4. Üçüncü tərəf xidmətləri\n\n'
+        'Tətbiq bəzi hallarda üçüncü tərəf mənbələrdən audio, şrift və ya digər məzmun '
+        'yükləyə bilər. Həmçinin Telegram kanalı və oxşar xarici keçidlər açıla bilər. '
+        'Bu xidmətlərin öz gizlilik qaydaları vardır; onlardan istifadə etdiyiniz zaman '
+        'həmin qaydalar da tətbiq olunur.\n\n'
+        '## 5. Məlumatların saxlanması və təhlükəsizlik\n\n'
+        'Lokal məlumatlar cihazınızın əməliyyat sistemi tərəfindən qorunur. Server '
+        'jurnalları və məzmun məlumatları xidmətin işləməsi üçün lazım olan müddət '
+        'saxlanıla bilər. Məlumatların qorunması üçün ağlabatan texniki və təşkilati '
+        'tədbirlər görürük; lakin internet üzərindən ötürülmənin tam riskdən azad '
+        'olduğuna zəmanət vermək mümkün deyil.\n\n'
+        '## 6. Uşaqların məxfiliyi\n\n'
+        'Tətbiq ümumi auditoriya, o cümlədən Quran tədrisi ilə məşğul olanlar üçündür. '
+        '13 yaşdan kiçik uşaqlardan bilərəkdən şəxsi məlumat toplamırıq. Əgər belə '
+        'məlumatın bizə çatdığını düşünürsinizsə, bizimlə əlaqə saxlayın — müvafiq '
+        'məlumatı siləcəyik.\n\n'
+        '## 7. Sizin hüquqlarınız\n\n'
+        'Mövcud qanunvericilik çərçivəsində:\n\n'
+        '- Cihaz parametrlərindən tətbiq məlumatlarını silə bilərsiniz '
+        '(tətbiqi silmək və ya keşi təmizləmək)\n'
+        '- Suallarınız və məlumatların silinməsi ilə bağlı sorğularınız üçün bizimlə '
+        'əlaqə saxlaya bilərsiniz\n\n'
+        '## 8. Siyasətin yenilənməsi\n\n'
+        'Bu gizlilik siyasəti vaxtaşırı yenilənə bilər. Əhəmiyyətli dəyişikliklər '
+        'tətbiqdə və ya idarə panelindəki bu səhifədə əks olunacaq. Yenilənmiş '
+        'versiyanın dərcindən sonra tətbiqdən istifadə etməyə davam etməyiniz '
+        'yenilənmiş siyasətlə razılaşmanız kimi qəbul edilə bilər.\n\n'
+        '## 9. Əlaqə\n\n'
+        'Gizlilik siyasəti barədə suallarınız üçün Miras Akademiyası ilə əlaqə saxlayın '
+        '(tətbiqdəki Telegram / əlaqə kanalları vasitəsilə).\n\n'
+        'Son yenilənmə: 2026.'
+    ),
+}
+
+
 def default_for(key: str) -> dict:
     if key == 'about':
         return dict(ABOUT_DEFAULT)
+    if key == 'privacy':
+        return dict(PRIVACY_DEFAULT)
     if key == 'meal_intro':
         return dict(MEAL_INTRO_DEFAULT)
     if key == 'reciters':

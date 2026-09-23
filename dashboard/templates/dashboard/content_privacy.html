@@ -1,0 +1,79 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Gizlilik siyasəti · Miras{% endblock %}
+{% block page_title %}Gizlilik siyasəti{% endblock %}
+{% block page_sub %}Tətbiqdəki gizlilik siyasəti — dəyişiklik dərhal API üzərindən görünür{% endblock %}
+
+{% block extra_css %}
+<style>
+.ct-flash {
+  padding: 12px 14px; border-radius: 14px; margin-bottom: 14px; font-weight: 700; font-size: 14px;
+}
+.ct-flash.ok { background: rgba(62,207,142,.16); color: #3ECF8E; }
+.ct-flash.err { background: rgba(229,57,53,.12); color: #C62828; }
+.ct-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.ct-field label {
+  font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
+}
+.ct-field input, .ct-field textarea {
+  width: 100%; box-sizing: border-box; border: 1.5px solid var(--input-border); background: var(--input-bg);
+  border-radius: 12px; padding: 12px 14px; font: inherit; font-weight: 600; color: var(--text);
+}
+.ct-field textarea { min-height: 420px; line-height: 1.55; font-weight: 500; resize: vertical; }
+.ct-field input:focus, .ct-field textarea:focus {
+  outline: none; border-color: #7B8CDE; background: var(--card); box-shadow: 0 0 0 3px rgba(123,140,222,.22);
+}
+.ct-hint { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+.ct-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.ct-btn {
+  appearance: none; border: 0; border-radius: 14px; padding: 12px 20px; font: inherit; font-weight: 800;
+  cursor: pointer; color: #fff; background: linear-gradient(135deg, #9AA8F0, #6B7AD6);
+  box-shadow: 0 10px 24px rgba(107,122,214,.35);
+}
+.ct-meta { font-size: 12px; color: var(--muted); font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if flash %}
+  <div class="ct-flash {% if flash_err %}err{% else %}ok{% endif %}">{{ flash }}</div>
+{% endif %}
+
+<div class="panel" style="margin-bottom:14px;">
+  <h2 style="margin-top:0;">İctimai URL</h2>
+  <p class="ct-hint" style="margin:0 0 10px;">
+    Mağaza (Play / App Store) və veb üçün bu linki verin — login tələb etmir.
+  </p>
+  <p style="margin:0;">
+    <a href="{{ public_url }}" target="_blank" rel="noopener">{{ public_url }}</a>
+  </p>
+  <p class="ct-hint" style="margin:10px 0 0;">
+    <code>/privacy/</code> və tətbiq eyni mətni göstərir — aşağıdakı formadan yeniləyin.
+  </p>
+</div>
+
+<form method="post" class="panel">
+  {% csrf_token %}
+  <h2>Gizlilik siyasəti</h2>
+  <div class="ct-field">
+    <label for="title">Başlıq</label>
+    <input id="title" name="title" value="{{ form.title|default:'' }}" />
+  </div>
+  <div class="ct-field">
+    <label for="lead">Qısa giriş</label>
+    <input id="lead" name="lead" value="{{ form.lead|default:'' }}" />
+  </div>
+  <div class="ct-field">
+    <label for="body">Əsas mətn</label>
+    <textarea id="body" name="body">{{ form.body|default:'' }}</textarea>
+    <p class="ct-hint">
+      Paraqrafları boş sətirlə ayırın. Başlıq üçün sətri <code>## Başlıq</code> kimi yazın.
+      Sitat üçün sətri <code>&gt; sitat</code> ilə başladın.
+    </p>
+  </div>
+  <div class="ct-actions">
+    <button type="submit" class="ct-btn">Yadda saxla</button>
+    {% if updated_at %}<span class="ct-meta">Son yeniləmə: {{ updated_at|date:"d.m.Y H:i" }}</span>{% endif %}
+  </div>
+</form>
+{% endblock %}

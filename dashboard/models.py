@@ -11,14 +11,16 @@ COLOR_GRAD_MID = 'rgba(0, 0, 0, 0)'
 
 
 class AppContent(models.Model):
-    """Tətbiq mətnləri — Haqqında, Məal giriş, Qarilər, Telegram (admin ↔ API)."""
+    """Tətbiq mətnləri — Haqqında, Gizlilik, Məal giriş, Qarilər, Telegram (admin ↔ API)."""
 
     KEY_ABOUT = 'about'
+    KEY_PRIVACY = 'privacy'
     KEY_MEAL_INTRO = 'meal_intro'
     KEY_RECITERS = 'reciters'
     KEY_TELEGRAM = 'telegram'
     KEY_CHOICES = [
         (KEY_ABOUT, 'Haqqında'),
+        (KEY_PRIVACY, 'Gizlilik siyasəti'),
         (KEY_MEAL_INTRO, 'Məal giriş'),
         (KEY_RECITERS, 'Qarilər'),
         (KEY_TELEGRAM, 'Telegram'),
@@ -383,7 +385,7 @@ class WordMarkNote(models.Model):
 
 
 class PageNote(models.Model):
-    """Məshəf səhifə qeydi — tətbiqdə AyahInfoSheet · Duracaq."""
+    """Mushaf səhifə qeydi — tətbiqdə AyahInfoSheet · Duracaq."""
 
     page = models.PositiveSmallIntegerField(unique=True, db_index=True)
     body = models.TextField()
@@ -422,7 +424,7 @@ JUZ30_COLORS = (
 
 class Juz30Segment(models.Model):
     """
-    30-cu cüz hərəkəli məshəf — söz seçimi.
+    30-cu cüz hərəkəli Mushaf — söz seçimi.
     Rəngli ərəbcə + toxunuşda xülasə qeydi + əzbər bölgü qeydi.
     """
 

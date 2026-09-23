@@ -13,7 +13,7 @@ from django.conf import settings
 
 PAGE_COUNT = 604
 
-# Madinah məshəf — cüz başlanğıc səhifələri (tətbiq juzPages.ts ilə eyni)
+# Madinah mushaf — cüz başlanğıc səhifələri (tətbiq juzPages.ts ilə eyni)
 JUZ_START_PAGES = [
     1, 22, 42, 62, 82, 102, 121, 142, 162, 182, 201, 222, 242, 262, 282, 302, 322,
     342, 362, 382, 402, 422, 442, 462, 482, 502, 522, 542, 562, 582,

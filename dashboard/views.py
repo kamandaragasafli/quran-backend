@@ -227,7 +227,7 @@ def _mushaf_reader(
     page_min: int = 1,
     page_max: int | None = None,
 ):
-    """Ümumi məshəf oxucu — tam Quran və ya cüz aralığı."""
+    """Ümumi mushaf oxucu — tam Quran və ya cüz aralığı."""
     if page_max is None:
         page_max = mushaf_lib.PAGE_COUNT
     page_min = max(1, page_min)
@@ -379,7 +379,7 @@ def quran(request):
 
 
 def juz30(request):
-    """30-cu cüz — eyni məshəf UI, yalnız səhifə 582–604."""
+    """30-cu cüz — eyni mushaf UI, yalnız səhifə 582–604."""
     return _mushaf_reader(
         request,
         nav='juz30',
@@ -501,6 +501,74 @@ def about_content(request):
             'updated_at': obj.updated_at,
             'flash': flash,
             'flash_err': flash_err,
+        },
+    )
+
+
+def privacy_public_redirect(request):
+    from django.shortcuts import redirect
+
+    return redirect('privacy-public', permanent=True)
+
+
+def privacy_edit_redirect(request):
+    from django.shortcuts import redirect
+
+    return redirect('dash-privacy', permanent=True)
+
+
+def privacy_public(request):
+    """İctimai gizlilik siyasəti — Play Store / veb link (login tələb etmir)."""
+    from .content_format import body_to_html
+    from .models import AppContent
+
+    data = dict(AppContent.get_or_seed(AppContent.KEY_PRIVACY).data or {})
+    return render(
+        request,
+        'dashboard/privacy_public.html',
+        {
+            'title': data.get('title') or 'Gizlilik siyasəti',
+            'lead': data.get('lead') or '',
+            'body_html': body_to_html(data.get('body') or ''),
+        },
+    )
+
+
+def privacy_content(request):
+    """Gizlilik siyasəti — tətbiq üçün AppContent."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from .models import AppContent
+
+    obj = AppContent.get_or_seed(AppContent.KEY_PRIVACY)
+    data = dict(obj.data or {})
+
+    if request.method == 'POST':
+        title = (request.POST.get('title') or '').strip()
+        lead = (request.POST.get('lead') or '').strip()
+        body = (request.POST.get('body') or '').strip()
+        if not body:
+            messages.error(request, 'Mətn boş ola bilməz.')
+        else:
+            obj.data = {'title': title, 'lead': lead, 'body': body}
+            obj.save()
+            messages.success(request, 'Gizlilik siyasəti yadda saxlanıldı — tətbiqdə görünəcək.')
+            return redirect('dash-privacy')
+        data = {'title': title, 'lead': lead, 'body': body}
+
+    flash, flash_err = _flash_from_messages(request)
+    public_url = request.build_absolute_uri('/privacy/')
+    return render(
+        request,
+        'dashboard/content_privacy.html',
+        {
+            'nav': 'privacy',
+            'form': data,
+            'updated_at': obj.updated_at,
+            'flash': flash,
+            'flash_err': flash_err,
+            'public_url': public_url,
         },
     )
 

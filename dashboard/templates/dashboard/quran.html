@@ -916,7 +916,7 @@
 </div>
 {% else %}
 <div class="mushaf-stage">
-  <article class="mushaf-page" aria-label="Məshəf səhifəsi {{ page_num }}">
+  <article class="mushaf-page" aria-label="Mushaf səhifəsi {{ page_num }}">
     {% if current_surah %}
     <div class="mushaf-header">
       <div class="ar">{{ current_surah.nameAr }}</div>
@@ -1036,7 +1036,7 @@
             placeholder="Qiraət haqqında qeydinizi yazın…"
             rows="4"
           ></textarea>
-          <p class="vp-hint">Qeyd istəyə bağlıdır; saxladıqdan sonra məshəfdə mavi görünəcək.</p>
+          <p class="vp-hint">Qeyd istəyə bağlıdır; saxladıqdan sonra Mushafda mavi görünəcək.</p>
         </div>
       </div>
     </div>
@@ -2093,6 +2093,8 @@
   var colorsEl = document.getElementById('j30Colors');
   var selOpen = document.getElementById('j30SelOpen');
   var selDelete = document.getElementById('vpSelDelete');
+  var selAr = document.getElementById('vpSelAr');
+  var selMeta = document.getElementById('vpSelMeta');
 
   var COLORS = ['#00897B','#6A1B9A','#EF6C00','#1565C0','#C62828','#2E7D32','#AD1457','#00838F'];
   var color = COLORS[0];
@@ -2105,6 +2107,14 @@
   var activeId = null;
   var dragAnchor = -1;
   var dragging = false;
+  var touchPending = false;
+  var touchArmed = false;
+  var touchStartX = 0;
+  var touchStartY = 0;
+
+  function isTouchLike(e) {
+    return e.pointerType === 'touch' || e.pointerType === 'pen';
+  }
 
   function hideBubble() {
     if (!bubble) return;
@@ -2161,6 +2171,41 @@
     lastInfo = infoFrom(picked);
   }
 
+  function placeBubbleNearPicked() {
+    if (!bubble || !picked.length) {
+      hideBubble();
+      return;
+    }
+    var left = Infinity, right = -Infinity, top = Infinity, bottom = -Infinity;
+    picked.forEach(function (g) {
+      var r = g.getBoundingClientRect();
+      left = Math.min(left, r.left);
+      right = Math.max(right, r.right);
+      top = Math.min(top, r.top);
+      bottom = Math.max(bottom, r.bottom);
+    });
+    bubble.classList.add('open');
+    bubble.setAttribute('aria-hidden', 'false');
+    bubble.style.visibility = 'hidden';
+    bubble.style.left = '0px';
+    bubble.style.top = '0px';
+    var bw = bubble.offsetWidth;
+    var bh = bubble.offsetHeight;
+    var cx = (left + right) / 2;
+    var bx = Math.max(8, Math.min(window.innerWidth - bw - 8, cx - bw / 2));
+    var by = top - bh - 8;
+    if (by < 8) by = bottom + 8;
+    bubble.style.left = bx + 'px';
+    bubble.style.top = by + 'px';
+    bubble.style.visibility = 'visible';
+  }
+
+  function updateSelBubble() {
+    if (selAr) selAr.textContent = (lastInfo && lastInfo.phrase) ? lastInfo.phrase : '—';
+    if (selMeta) selMeta.textContent = (lastInfo && lastInfo.meta) ? lastInfo.meta : '';
+  }
+
+  /** Sürüklə / Shift+klik — bir neçə söz; modal yalnız «Xülasə / Əzbər» düyməsindən */
   function applyRange(a, b) {
     var lo = Math.min(a, b), hi = Math.max(a, b);
     picked = wordGlyphs.slice(lo, hi + 1);
@@ -2171,7 +2216,8 @@
     if (activeId != null && lo === hi) expandToSegment();
     if (selDelete) selDelete.hidden = activeId == null;
     if (deleteBtn) { deleteBtn.hidden = activeId == null; deleteBtn.disabled = false; deleteBtn.textContent = 'Sil'; }
-    if (lastInfo && lastInfo.phrase) openModal();
+    updateSelBubble();
+    if (lastInfo && lastInfo.phrase) placeBubbleNearPicked();
     else hideBubble();
   }
 
@@ -2366,9 +2412,35 @@
       if (backdrop.classList.contains('open')) return;
       if (e.button != null && e.button !== 0) return;
       var g = glyphFromEvent(e);
-      if (!g) { if (bubble && !bubble.contains(e.target)) clearAll(); return; }
+      if (!g) {
+        if (bubble && !bubble.contains(e.target)) clearAll();
+        touchPending = false;
+        touchArmed = false;
+        dragging = false;
+        return;
+      }
       var idx = wordGlyphs.indexOf(g);
       if (idx < 0) return;
+
+      if (e.shiftKey && dragAnchor >= 0) {
+        e.preventDefault();
+        applyRange(dragAnchor, idx);
+        dragging = false;
+        touchPending = false;
+        touchArmed = false;
+        return;
+      }
+
+      if (isTouchLike(e)) {
+        touchStartX = e.clientX;
+        touchStartY = e.clientY;
+        touchPending = true;
+        touchArmed = false;
+        dragging = false;
+        dragAnchor = idx;
+        return;
+      }
+
       e.preventDefault();
       try { page.setPointerCapture(e.pointerId); } catch (err) {}
       dragAnchor = idx;
@@ -2377,8 +2449,30 @@
     }, true);
 
     page.addEventListener('pointermove', function (e) {
+      if (touchPending && !touchArmed && isTouchLike(e)) {
+        var dx = e.clientX - touchStartX;
+        var dy = e.clientY - touchStartY;
+        var adx = Math.abs(dx);
+        var ady = Math.abs(dy);
+        if (ady > 10 && ady >= adx) {
+          touchPending = false;
+          dragAnchor = -1;
+          return;
+        }
+        if (adx > 12 && adx > ady) {
+          touchArmed = true;
+          touchPending = false;
+          dragging = true;
+          e.preventDefault();
+          try { page.setPointerCapture(e.pointerId); } catch (err) {}
+          applyRange(dragAnchor, dragAnchor);
+        } else {
+          return;
+        }
+      }
+
       if (!dragging || dragAnchor < 0) return;
-      e.preventDefault();
+      if (isTouchLike(e) && touchArmed) e.preventDefault();
       var g = glyphFromEvent(e);
       if (!g) {
         var el = document.elementFromPoint(e.clientX, e.clientY);
@@ -2391,8 +2485,32 @@
       applyRange(dragAnchor, idx);
     }, true);
 
-    page.addEventListener('pointerup', function () { dragging = false; }, true);
+    page.addEventListener('pointerup', function (e) {
+      if (touchPending && !touchArmed && dragAnchor >= 0 && isTouchLike(e)) {
+        var adx = Math.abs(e.clientX - touchStartX);
+        var ady = Math.abs(e.clientY - touchStartY);
+        if (adx < 10 && ady < 10) {
+          applyRange(dragAnchor, dragAnchor);
+        }
+      }
+      touchPending = false;
+      touchArmed = false;
+      dragging = false;
+    }, true);
+
+    page.addEventListener('pointercancel', function () {
+      touchPending = false;
+      touchArmed = false;
+      dragging = false;
+    }, true);
   }
+
+  if (bubble) {
+    bubble.addEventListener('mousedown', function (e) { e.preventDefault(); });
+  }
+  window.addEventListener('scroll', function () {
+    if (bubble && bubble.classList.contains('open') && picked.length) placeBubbleNearPicked();
+  }, true);
 
   if (selOpen) selOpen.addEventListener('click', openModal);
   if (selDelete) selDelete.addEventListener('click', del);
