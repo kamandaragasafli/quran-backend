@@ -558,7 +558,6 @@ def privacy_content(request):
         data = {'title': title, 'lead': lead, 'body': body}
 
     flash, flash_err = _flash_from_messages(request)
-    public_url = request.build_absolute_uri('/privacy/')
     return render(
         request,
         'dashboard/content_privacy.html',
@@ -568,7 +567,6 @@ def privacy_content(request):
             'updated_at': obj.updated_at,
             'flash': flash,
             'flash_err': flash_err,
-            'public_url': public_url,
         },
     )
 

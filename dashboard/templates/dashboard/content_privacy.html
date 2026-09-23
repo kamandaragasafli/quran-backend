@@ -39,19 +39,6 @@
   <div class="ct-flash {% if flash_err %}err{% else %}ok{% endif %}">{{ flash }}</div>
 {% endif %}
 
-<div class="panel" style="margin-bottom:14px;">
-  <h2 style="margin-top:0;">İctimai URL</h2>
-  <p class="ct-hint" style="margin:0 0 10px;">
-    Mağaza (Play / App Store) və veb üçün bu linki verin — login tələb etmir.
-  </p>
-  <p style="margin:0;">
-    <a href="{{ public_url }}" target="_blank" rel="noopener">{{ public_url }}</a>
-  </p>
-  <p class="ct-hint" style="margin:10px 0 0;">
-    <code>/privacy/</code> və tətbiq eyni mətni göstərir — aşağıdakı formadan yeniləyin.
-  </p>
-</div>
-
 <form method="post" class="panel">
   {% csrf_token %}
   <h2>Gizlilik siyasəti</h2>
